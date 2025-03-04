@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
+import { TextInput } from 'react-native-paper';
 import { useUserLoginMutation } from '../redux/Slice/user'
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('')
@@ -19,8 +20,11 @@ export default function Login({ navigation }) {
         // Password validation
         if (!password) {
             newErrors.password = 'Password is required'
-        } else if (password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters'
+        } else if (password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters'
+        }
+        else if (!/^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/.test(password)) {
+            newErrors.password = 'Password must contain at least one uppercase letter, one special character, and one number'
         }
 
         setErrors(newErrors)
@@ -29,23 +33,33 @@ export default function Login({ navigation }) {
 
     const handleSubmit = async () => {
         if (validateForm()) {
-            console.log('Form submitted:', { email, password })
-            const userData = {
-                'email': email,
-                'password': password
-            }
             try {
-                const response = await userLogin(userData)
-                console.log(response.data)
-                if (response.data) {
-                    const token = response?.data.headers?.get('x-auth-token')
-                    console.log(token)
-                    console.log('Login successful');
-                    navigation.navigate('Home')
+                console.log('Sending login request...');
+                console.log(email, password);
+                const response = await userLogin({
+                    email: email.trim(),
+                    password: password
+                }).unwrap();
+
+                console.log('Server response:', response);
+
+                if (response?.data) {
+                    Alert.alert('Success', 'Login successful');
+                    navigation.navigate('Home');
                 }
-                else { throw new Error('Login failed') }
             } catch (error) {
-                console.log(error);
+                console.error('Login error details:', error);
+                if (error.status === 'FETCH_ERROR') {
+                    Alert.alert(
+                        'Connection Error',
+                        'Unable to reach the server. Please check your internet connection.'
+                    );
+                } else {
+                    Alert.alert(
+                        'Login Failed',
+                        error.data?.message || 'Invalid credentials'
+                    );
+                }
             }
         }
     }
@@ -55,21 +69,25 @@ export default function Login({ navigation }) {
             <Text style={styles.title}>Login</Text>
 
             <TextInput
-                style={styles.input}
-                placeholder="Email"
+                mode="outlined"
+                label="Email"
+                placeholder="Enter your email"
+                activeOutlineColor="#00b2bc"
                 value={email}
                 onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
+                style={styles.input}
             />
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
             <TextInput
-                style={styles.input}
-                placeholder="Password"
+                mode="outlined"
+                activeOutlineColor="#00b2bc"
+                label="password"
+                placeholder="Enter your password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                style={styles.input}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
@@ -98,11 +116,6 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        height: 40,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 5,
-        paddingHorizontal: 10,
         marginBottom: 10,
     },
     errorText: {
@@ -112,7 +125,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     button: {
-        backgroundColor: '#09c',
+        backgroundColor: '#00b2bc',
         width: '100%',
         padding: 15,
         borderRadius: 5,
