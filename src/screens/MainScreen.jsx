@@ -1,21 +1,22 @@
-import 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Home } from './Home';
-import Login from './Login';
+import "react-native-gesture-handler";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Home } from "./Home";
+import Login from "./Login";
+import { RegisterPage } from "./RegisterPage";
 
-import { RegisterPage } from './RegisterPage';
 const MainScreen = () => {
-    const Stack = createStackNavigator();
+  const Stack = createStackNavigator();
 
-    return (
-    
+  return (
     <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
-            <Stack.Screen name="Home" component={Home} />
-        </Stack.Navigator>
+      <Stack.Navigator initialRouteName="RegisterPage">
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="RegisterPage" component={RegisterPage} />
+      </Stack.Navigator>
     </NavigationContainer>
-  )
-}
+  );
+};
 
-export default MainScreen
+export default MainScreen;

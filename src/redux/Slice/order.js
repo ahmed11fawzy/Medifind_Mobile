@@ -17,9 +17,9 @@ export  const orders = corApi.injectEndpoints({
         }),
         getOrder:build.query({
             query:(id)=>({
-                url:`orders/${id}`
+                url:`orders/${id}`,
                 method:'GET'
-            })
+            }),
             providesTags: ['Orders']
         })
     })
