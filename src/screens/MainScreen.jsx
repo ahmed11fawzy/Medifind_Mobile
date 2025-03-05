@@ -8,15 +8,21 @@ import {Donations} from './Donations';
 import {Home} from './Home';
 import Login from './Login';
 
+
+import { RegisterPage } from './RegisterPage';
+
 const MainScreen = () => {
     const Stack = createStackNavigator();
 
     return (
+
         <PaperProvider>
+
     
     <NavigationContainer>
         <Stack.Navigator initialRouteName="Home">
             <Stack.Screen name="Home" component={Home} />
+
             <Stack.Screen name="AddMedicine" component={AddMedicine} />
             <Stack.Screen name="Donations" component={Donations} />
             <Stack.Screen name="Login" component={Login} />
@@ -24,6 +30,7 @@ const MainScreen = () => {
         </Stack.Navigator>
     </NavigationContainer>
     </PaperProvider>
+
 
   )
 }
