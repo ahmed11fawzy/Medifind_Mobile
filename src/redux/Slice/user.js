@@ -4,10 +4,14 @@ export const user = coreApi.injectEndpoints({
     endpoints: (build) => ({
         userLogin: build.mutation({
             query: (body) => ({
-                url: `login`,
-                method: "POST",
+                url: 'login',
+                method: 'POST',
                 body,
-                responseHandler: 'text',  // Add this to get raw response
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                responseHandler: 'text',
             }),
             transformResponse: (response, meta) => ({
                 data: JSON.parse(response),
