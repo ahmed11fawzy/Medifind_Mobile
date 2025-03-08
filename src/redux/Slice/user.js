@@ -9,13 +9,19 @@ export const user = coreApi.injectEndpoints({
                 body,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+
                 },
                 responseHandler: 'text',
             }),
             transformResponse: (response, meta) => ({
                 data: JSON.parse(response),
-                headers: meta.response.headers
+                // Only extract needed headers as plain values
+                headers: {
+                    contentType: meta.response.headers.get('content-type'),
+                    authorization: meta.response.headers.get('authorization'),
+                    token: meta.response.headers.get('x-auth-token')
+                }
             }),
             providesTags: ['User']
         }),
@@ -36,12 +42,16 @@ export const user = coreApi.injectEndpoints({
             }),
             transformResponse: (response, meta) => ({
                 data: JSON.parse(response),
-                headers: meta.response.headers
+                // Only extract needed headers as plain values
+                headers: {
+                    contentType: meta.response.headers.get('content-type'),
+                    authorization: meta.response.headers.get('authorization')
+                }
             }),
             providesTags: ['User']
         }),
-    })
+    }),
+    overrideExisting: true  // Add this line to allow endpoint overrides
 })
-
 
 export const { useUserLoginMutation, useGetAllUsersQuery, useUserRegisterMutation } = user
