@@ -6,19 +6,15 @@ import { Styles } from '../constants/mainStyle'
 import { FlatList } from "react-native";
 import { useGetAcceptedMedicinesQuery } from "../redux/Slice/medicine"
 import { RoundedCard } from "../Component/roundedCard";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../hooks/useAuth';
 export function Home() {
-  const getToken = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('token');
-      return jsonValue;
-    } catch (e) {
-      // handle error
-    }
-  };
-  const token = getToken();
-  console.log(token);
+  const { isAuthenticated, userId, tokenData, userRole } = useAuth();
 
+  if (isAuthenticated) {
+    console.log(userId);
+    console.log(tokenData);
+    console.log(userRole);
+  }
   const { data: acceptedMedicines, isLoading, isError, error } = useGetAcceptedMedicinesQuery();
   const heroSection = () => (
     <View style={[Styles.container, { marginVertical: '50' }]}>
