@@ -33,10 +33,13 @@ export const medicine = coreApi.injectEndpoints({
                 body,
                 responseHandler: 'text',  // Add this to get raw response
             }),
-            transformResponse: (response, meta) => ({
-                data: JSON.parse(response),
-                headers: meta.response.headers
-            }),
+                transformResponse: (response, meta) => ({
+            data: JSON.parse(response),
+            headers: {
+                "content-type": meta.response.headers.get("content-type"),
+                "content-length": meta.response.headers.get("content-length"),
+            }
+                    }),
             invalidatesTags: ['Medicine']
         }),
 
@@ -66,7 +69,9 @@ export const medicine = coreApi.injectEndpoints({
         invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
        }),
  
-}) })
+}) ,
+overrideExisting: true,
+})
 
 export const { useGetAllMedicinesQuery
                 ,useGetUserOffersQuery

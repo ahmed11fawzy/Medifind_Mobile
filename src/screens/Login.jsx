@@ -45,6 +45,7 @@ export default function Login({ navigation }) {
 
                 if (response?.data) {
                     Alert.alert('Success', 'Login successful');
+                    
                     navigation.navigate('Home');
                 }
             } catch (error) {

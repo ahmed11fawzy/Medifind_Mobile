@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
 import {AddMedicine} from './AddMedicine';  
 import {Donations} from './Donations';
+import {RequestsReview} from './RequestsReview';
 
 import {Home} from './Home';
 import Login from './Login';
@@ -20,12 +21,13 @@ const MainScreen = () => {
 
     
     <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
+        <Stack.Navigator initialRouteName="RequestsReview">
             <Stack.Screen name="Home" component={Home} />
 
             <Stack.Screen name="AddMedicine" component={AddMedicine} />
             <Stack.Screen name="Donations" component={Donations} />
             <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="RequestsReview" component={RequestsReview} />
 
         </Stack.Navigator>
     </NavigationContainer>
