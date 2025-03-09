@@ -23,7 +23,8 @@ const MainScreen = () => {
 
     
     <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
+    <Stack.Navigator initialRouteName="Login">
+        
             <Stack.Screen name="Home" component={Home} />
 
             <Stack.Screen name="AddMedicine" component={AddMedicine} />
