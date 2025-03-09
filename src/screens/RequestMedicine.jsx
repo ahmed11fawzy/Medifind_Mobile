@@ -1,15 +1,21 @@
 import React, { useLayoutEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Image, Text } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Image, Text, ActivityIndicator, Platform } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native"; 
+import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
+import { useAddRequestMutation } from "../redux/Slice/request";
+import { useRoute } from "@react-navigation/native";
+
 
 export const RequestMedicine = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
   const [imageUri, setImageUri] = useState(null);
   const [medicineName, setMedicineName] = useState("");
   const [description, setDescription] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({ medicineName: false, description: false });
+  const [addRequest, { isLoading }] = useAddRequestMutation();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -29,28 +35,129 @@ export const RequestMedicine = () => {
       ),
     });
   }, [navigation]);
-  
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access media library is required.");
-      return;
+    try {
+      const isWeb = Platform.OS === 'web';
+      if (isWeb) {
+        console.log("Using web file picker");
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        const filePromise = new Promise((resolve) => {
+          input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve({
+                  uri: file,
+                  base64: base64,
+                  width: 300, 
+                  height: 300
+                });
+              };
+              reader.readAsDataURL(file);
+            } else {
+              resolve(null);
+            }
+          };
+        });
+        input.click();
+        const result = await filePromise;
+        if (result) {
+          await uploadImageToCloudinary(result);
+        }
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          alert("Permission to access media library is required.");
+          return;
+        }
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+          base64: true,
+        });
+
+        if (!result.canceled) {
+          await uploadImageToCloudinary(result.assets[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      alert("Failed to pick image. Please try again.");
     }
+  };
+  const uploadImageToCloudinary = async (imageAsset) => {
+    setUploading(true);
+    try {
+      const isWeb = Platform.OS === 'web';
+      let formData = new FormData();
+      
+      if (isWeb) {
+        if (imageAsset.base64) {
+          const base64Response = await fetch(`data:image/jpeg;base64,${imageAsset.base64}`);
+          const blob = await base64Response.blob();
+          formData.append("file", blob);
+        } else {
+          formData.append("file", imageAsset.uri);
+        }
+      } else {
+        formData.append("file", {
+          uri: imageAsset.uri,
+          type: "image/jpeg",
+          name: "upload.jpg",
+        });
+      }
+      formData.append("upload_preset", "medifined");
+      formData.append("cloud_name", "doxyvufkz");
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+      console.log("Uploading to Cloudinary...");
+      
+      const response = await axios.post(
+        "https://api.cloudinary.com/v1_1/doxyvufkz/image/upload",
+        formData,
+        {
+          headers: { 
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+      console.log("Upload successful:", response.data);
+      setImageUri(response.data.secure_url);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+        if (error.response.data.error && error.response.data.error.message) {
+          if (error.response.data.error.message.includes("upload preset")) {
+            alert("Cloudinary Error: Upload preset 'medifined' not found or not properly configured. Please check your Cloudinary settings.");
+          } else {
+            alert(`Failed to upload image: ${error.response.data.error.message}`);
+          }
+        } else {
+          alert(`Failed to upload image: ${error.response.status} ${error.response.statusText}`);
+        }
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+        alert("Failed to upload image: No response from server");
+      } else {
+        console.error("Error message:", error.message);
+        alert(`Failed to upload image: ${error.message}`);
+      }
+    } finally {
+      setUploading(false);
     }
   };
 
-  const validateForm = () => {
+  const validateForm = async () => {
     let newErrors = {
       medicineName: medicineName.trim() === "",
       description: description.trim() === "",
@@ -59,16 +166,72 @@ export const RequestMedicine = () => {
     setErrors(newErrors);
 
     if (!newErrors.medicineName && !newErrors.description) {
-      console.log("Medicine Name:", medicineName);
-      console.log("Description:", description);
-      alert("Request submitted successfully!");
+      try {
+        if (!imageUri) {
+          alert("Please upload a prescription image");
+          return;
+        }
+        const { userId } = useAuth();
+        const route = useRoute();
+        const { medicine_id } = route.params; 
+
+        const requestBody = {
+          req_name: medicineName,
+          req_description: description,
+          prescription_img: imageUri,
+          requested: true,
+          status: false,
+          examined: false,
+          medicine: medicine_id, 
+          user_id: userId,
+        };
+
+        console.log('Sending request with data:', JSON.stringify(requestBody));
+
+        try {
+          const result = await addRequest(requestBody).unwrap();
+          console.log('Request successful:', result);
+          alert("Request submitted successfully!");
+          resetForm();
+          navigation.navigate("Needs");
+        } catch (apiError) {
+          console.error('API Error:', apiError);
+          let errorMessage = 'Unknown error';
+          try {
+            if (typeof apiError.data === 'string') {
+              const errorData = JSON.parse(apiError.data);
+              errorMessage = errorData.data || 'Server error';
+              console.log('Full error data:', errorData);
+            } else if (apiError.data && apiError.data.data) {
+              errorMessage = apiError.data.data;
+            }
+          } catch (e) {
+            console.error('Error parsing error message:', e);
+            errorMessage = apiError.message || 'Server error';
+          }
+          
+          alert(`Request failed: ${errorMessage}`);
+        }
+      } catch (error) {
+        console.error("Submission error:", error);
+        alert("Failed to submit request. Please try again later.");
+      }
     }
+  };
+
+  const resetForm = () => {
+    setMedicineName("");
+    setDescription("");
+    setImageUri(null);
+    setErrors({ medicineName: false, description: false });
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-        {imageUri ? (
+        {uploading ? (
+          <ActivityIndicator size="large" color="#007bff" />
+        ) : imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.avatar} />
         ) : (
           <View style={styles.plusContainer}>
@@ -98,8 +261,8 @@ export const RequestMedicine = () => {
         error={errors.description}
       />
       {errors.description && <Text style={styles.errorText}>Description is required.</Text>}
-      <Button mode="contained" onPress={validateForm} style={styles.button}>
-        Save
+      <Button mode="contained" onPress={validateForm} style={styles.button} disabled={isLoading || uploading}> 
+         {isLoading ? "Submitting..." : "Add Request"}
       </Button>
     </View>
   );
@@ -160,7 +323,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginBottom: 10,
   },
-    button: {
-      marginTop: 20,
+  button: {
+    marginTop: 20,
   },
 });

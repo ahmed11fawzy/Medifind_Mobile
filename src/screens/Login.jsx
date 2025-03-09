@@ -2,11 +2,14 @@ import React, { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
 import { TextInput } from 'react-native-paper';
 import { useUserLoginMutation } from '../redux/Slice/user'
+import { SERVER_URL, checkServerStatus } from '../utils/serverCheck'
+
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errors, setErrors] = useState({})
     const [userLogin, { isLoading: isLoginLoading }] = useUserLoginMutation()
+
     const validateForm = () => {
         let newErrors = {}
 
@@ -35,7 +38,23 @@ export default function Login({ navigation }) {
         if (validateForm()) {
             try {
                 console.log('Sending login request...');
-                console.log(email, password);
+                console.log('Email:', email, 'Password length:', password.length);
+                
+                // First check if server is reachable
+                try {
+                    const serverCheck = await fetch(BASE_URL || 'http://192.168.1.57:7777');
+                    if (!serverCheck.ok) {
+                        throw new Error(`Server returned ${serverCheck.status}: ${serverCheck.statusText}`);
+                    }
+                } catch (serverError) {
+                    console.error('Server connectivity error:', serverError);
+                    Alert.alert(
+                        'Server Error',
+                        'Cannot connect to the server. Please check if the server is running and try again.'
+                    );
+                    return;
+                }
+                
                 const response = await userLogin({
                     email: email.trim(),
                     password: password
@@ -52,12 +71,17 @@ export default function Login({ navigation }) {
                 if (error.status === 'FETCH_ERROR') {
                     Alert.alert(
                         'Connection Error',
-                        'Unable to reach the server. Please check your internet connection.'
+                        'Unable to reach the server. Please check your internet connection and make sure the backend server is running.'
+                    );
+                } else if (error.message && error.message.includes('invalid response')) {
+                    Alert.alert(
+                        'Server Error',
+                        'The server returned an invalid response. Please check if the backend server is running correctly.'
                     );
                 } else {
                     Alert.alert(
                         'Login Failed',
-                        error.data?.message || 'Invalid credentials'
+                        error.data?.message || 'Invalid credentials. Please check your email and password.'
                     );
                 }
             }

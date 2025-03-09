@@ -1,6 +1,6 @@
-import{coreApi} from './coreApi'
+import{coreApi } from './coreApi'
 
-export  const orders = corApi.injectEndpoints({
+export  const orders = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addOrder: build.mutation({
             query: (body) => ({
@@ -17,12 +17,12 @@ export  const orders = corApi.injectEndpoints({
         }),
         getOrder:build.query({
             query:(id)=>({
-                url:`orders/${id}`
-                method:'GET'
-            })
-            providesTags: ['Orders']
+                url:`orders/${id}`,
+                method:'GET',
+            }),
+            providesTags: ['Orders'],
         })
     })
-})
+});
 
 export const {useAddOrderMutation,useGetOrderQuery}=orders

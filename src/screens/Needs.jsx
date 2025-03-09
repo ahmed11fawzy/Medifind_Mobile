@@ -1,106 +1,74 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text, Image, ScrollView } from "react-native";
-import { Card, Button } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native"; 
+import React from "react";
+import { View, FlatList, StyleSheet, ActivityIndicator, Text, Alert } from "react-native";
+import { useAuth } from "../hooks/useAuth";
+import { useGetUserRequestsQuery, useDeleteRequestMutation } from "../redux/Slice/request";
+import {CardComponent } from "../Component/OrderCard";
+import { useNavigation } from "@react-navigation/native";
 
-export const Needs = () => {
-  const navigation = useNavigation(); 
+export const CardPage = () => {
+  const { userId } = useAuth();
+  const navigation = useNavigation();
+  const { data: requests, isLoading, error } = useGetUserRequestsQuery(userId);
+  const [deleteRequest] = useDeleteRequestMutation();
 
-  const [medicines, setMedicines] = useState([
-    { id: 1, name: "Paracetamol", description: "Used for fever and pain relief.", image: "https://example.com/paracetamol.jpg" },
-    { id: 2, name: "Aspirin", description: "Used for pain and inflammation.", image: "https://example.com/aspirin.jpg" },
-  ]);
-
-  const handleDelete = (id) => {
-    setMedicines(medicines.filter((item) => item.id !== id));
+  const handleRemove = async (id) => {
+    try {
+      await deleteRequest(id).unwrap();
+      Alert.alert("Success", "Request deleted successfully!");
+    } catch (err) {
+      Alert.alert("Error", "Failed to delete request!");
+    }
   };
 
-  const handleCheckout = () => {
-    navigation.navigate("RequestMedicine"); 
+  const goToRequestMedicine = (name, medicine_id, request_id) => {
+    navigation.navigate("RequestMedicine", {
+      medicineName: name,
+      medicine_id: medicine._id ,
+      request_id,
+      requested: true,
+    });
   };
+
+  if (isLoading) return <ActivityIndicator size="large" color="#109d89" />;
+  if (error) return <Text style={styles.errorText}>Failed to fetch requests.</Text>;
 
   return (
-    <ScrollView style={styles.container}>
-      {medicines.map((item) => (
-        <Card key={item.id} style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            <Image source={{ uri: item.image }} style={styles.cardImage} />
-            <View style={styles.textContainer}>
-              <Text style={styles.medicineName}>{item.name}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-            </View>
-          </Card.Content>
-          <Card.Actions style={styles.actions}>
-            <Button mode="contained" style={[styles.button, styles.updateButton]}>Update</Button>
-            <Button mode="contained" style={[styles.button, styles.deleteButton]} onPress={() => handleDelete(item.id)}>Delete</Button>
-            <Button mode="contained" style={[styles.button, styles.checkoutButton]} onPress={handleCheckout}>Checkout</Button>
-          </Card.Actions>
-        </Card>
-      ))}
-    </ScrollView>
+    <View style={styles.container}>
+      <FlatList
+        data={requests}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <CardComponent
+            requested={item.requested}
+            medicine_id={item.medicine._id}
+            examined={item.examined}
+            status={item.status}
+            request_id={item._id}
+            prescription_img={item.prescription_img || ""}
+            image={item.medicine?.image_path || ""}
+            name={item.medicine?.name || "No name"}
+            quantity={item.medicine?.concentration || ""}
+            onRemove={() => handleRemove(item._id)}
+            goToRequestMedicine={() =>
+              goToRequestMedicine(item.medicine.name, item.medicine._id, item._id)
+            }
+          />
+        )}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#ffffffa0",
-  },
-  card: {
-    marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
     padding: 10,
+    backgroundColor: "#f8f8f8",
   },
-  cardContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingBottom: 10,
-  },
-  cardImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
-  },
-  textContainer: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  medicineName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  description: {
-    fontSize: 14,
-    color: "#555",
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  button: {
-    minWidth: "30%",
-    flexShrink: 1,
-    marginHorizontal: 5,
-    marginVertical: 5,
-    borderRadius: 15,
-    alignSelf: "center",
-  },
-  updateButton: {
-    backgroundColor: "blue", 
-  },
-  deleteButton: {
-    backgroundColor: "red", 
-  },
-  checkoutButton: {
-    backgroundColor: "green", 
+  errorText: {
+    textAlign: "center",
+    color: "red",
+    fontSize: 16,
   },
 });
+

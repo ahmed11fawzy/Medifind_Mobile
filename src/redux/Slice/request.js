@@ -1,17 +1,47 @@
-import { corApi } from './coreApi'
-export const request = corApi.injectEndpoints({
+import { coreApi} from './coreApi'
+
+console.log('Core API:', coreApi);
+console.log('Inject Endpoints:', coreApi.injectEndpoints);
+export const request = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addRequest: build.mutation({
             query: (body) => ({
                 url: 'request',
                 method: 'POST',
                 body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 responseHandler: 'text',
             }),
-            transformResponse: (response, meta) => ({
-                data: JSON.parse(response),
-                headers: meta.response.headers
-            }),
+            transformResponse: (response, meta) => {
+                try {
+                    // Check if response is empty or not valid JSON
+                    if (!response || response.trim() === '') {
+                        console.error('Empty response received');
+                        throw new Error('Server returned an empty response');
+                    }
+                    
+                    // Check if response starts with HTML
+                    if (response.trim().startsWith('<!DOCTYPE') || response.trim().startsWith('<html')) {
+                        console.error('HTML response received instead of JSON:', response.substring(0, 100));
+                        throw new Error('Server returned HTML instead of JSON. Please check if the server is running correctly.');
+                    }
+                    
+                    // Log the raw response for debugging
+                    console.log('Raw response from server:', response.substring(0, 200));
+                    
+                    return {
+                        data: JSON.parse(response),
+                        headers: meta.response.headers
+                    };
+                } catch (error) {
+                    console.error('Failed to parse response:', error.message);
+                    console.error('Response preview:', response ? response.substring(0, 100) : 'null');
+                    throw new Error('Server returned an invalid response. Please check if the server is running correctly.');
+                }
+            },
             providesTags: ['Request']
         }),
         getUserRequests: build.query({
@@ -23,5 +53,6 @@ export const request = corApi.injectEndpoints({
         }),
        
 })
-
+})
+console.log('Request API:', request);
 export const { useAddRequestMutation, useGetUserRequestsQuery } = request;
