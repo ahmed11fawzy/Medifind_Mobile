@@ -52,6 +52,7 @@ export default function Login({ navigation }) {
                 console.log('Response headers:', response.headers);
 
                 if (response?.data) {
+
                     const token = response.headers.token || response.headers.authorization;
                     console.log('User Token:', token);
 
@@ -72,6 +73,7 @@ export default function Login({ navigation }) {
                         console.error('No token found in response');
                         Alert.alert('Login Error', 'Authentication token not found');
                     }
+
                 }
             } catch (error) {
                 console.error('Login error details:', error);
