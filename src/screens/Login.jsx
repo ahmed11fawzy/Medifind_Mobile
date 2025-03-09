@@ -1,15 +1,18 @@
 import React, { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
 import { TextInput } from 'react-native-paper';
-import asyncStorage from '@react-native-async-storage/async-storage';
 import { useUserLoginMutation } from '../redux/Slice/user'
-import NetInfo from '@react-native-community/netinfo';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../redux/Slice/authSlice';
+import { decodeToken } from '../utils/tokenUtils';
 
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errors, setErrors] = useState({})
     const [userLogin, { isLoading: isLoginLoading }] = useUserLoginMutation()
+    const dispatch = useDispatch();
+    
     const validateForm = () => {
         let newErrors = {}
 
@@ -39,8 +42,7 @@ export default function Login({ navigation }) {
             try {
                 console.log('Sending login request...');
                 console.log(email, password);
-                // Remove NetInfo check for now
-
+                
                 const response = await userLogin({
                     email: email.trim(),
                     password: password
@@ -50,17 +52,28 @@ export default function Login({ navigation }) {
                 console.log('Response headers:', response.headers);
 
                 if (response?.data) {
-                    Alert.alert('Success', 'Login successful');
+
                     const token = response.headers.token || response.headers.authorization;
                     console.log('User Token:', token);
 
                     if (token) {
-                        await asyncStorage.setItem('token', token);
+                        // Decode token to get user data
+                        const decodedToken = decodeToken(token);
+                        console.log('Decoded token:', decodedToken);
+                        
+                        // Save token and decoded data to Redux store
+                        dispatch(setCredentials({ 
+                            token, 
+                            user: decodedToken || response.data 
+                        }));
+                        
+                        Alert.alert('Success', 'Login successful');
                         navigation.navigate('Home');
                     } else {
                         console.error('No token found in response');
                         Alert.alert('Login Error', 'Authentication token not found');
                     }
+
                 }
             } catch (error) {
                 console.error('Login error details:', error);

@@ -4,7 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
 import {AddMedicine} from './AddMedicine';  
 import {Donations} from './Donations';
+import { ProfilePage } from './Profile';
 import {RequestsReview} from './RequestsReview';
+
 
 import {Home} from './Home';
 import Login from './Login';
@@ -13,7 +15,7 @@ import Login from './Login';
 import { RegisterPage } from './RegisterPage';
 
 const MainScreen = () => {
-    const Stack = createStackNavigator();
+  const Stack = createStackNavigator();
 
     return (
 
@@ -21,13 +23,16 @@ const MainScreen = () => {
 
     
     <NavigationContainer>
-        <Stack.Navigator initialRouteName="RequestsReview">
+        <Stack.Navigator initialRouteName="Home">
             <Stack.Screen name="Home" component={Home} />
 
             <Stack.Screen name="AddMedicine" component={AddMedicine} />
             <Stack.Screen name="Donations" component={Donations} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="RequestsReview" component={RequestsReview} />
+            <Stack.Screen name="RegisterPage" component={RegisterPage} />
+            <Stack.Screen name="ProfilePage" component={ProfilePage} />
+
 
         </Stack.Navigator>
     </NavigationContainer>
@@ -37,4 +42,4 @@ const MainScreen = () => {
   )
 }
 
-export default MainScreen
+export default MainScreen;

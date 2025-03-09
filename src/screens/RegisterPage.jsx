@@ -11,13 +11,17 @@ import {
 } from "react-native";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
+import { useUserRegisterMutation } from "../redux/Slice/user";
 
-export function RegisterPage() {
+export function RegisterPage({ navigation }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
+
+  // Initialize the register mutation hook
+  const [userRegister, { isLoading }] = useUserRegisterMutation();
 
   const validateAndSubmit = () => {
     let newErrors = {};
@@ -44,12 +48,47 @@ export function RegisterPage() {
       newErrors.confirmPassword = "Passwords do not match.";
 
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length === 0) {
-      console.log("Registration successful!");
-      setName("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+      console.log("Attempting registration with:", { name, email, password });
+      console.log("Using base URL:", process.env.BASE_URL);
+      userRegister({ name, email, password })
+        .unwrap()
+        .then((response) => {
+          console.log("Registration successful:", response);
+          setName("");
+          setEmail("");
+          setPassword("");
+          setConfirmPassword("");
+          setErrors({});
+          navigation.navigate("Login");
+        })
+        .catch((error) => {
+          console.error("Registration error details:", {
+            status: error.status,
+            error: error.error,
+            data: error.data,
+            originalStatus: error.originalStatus,
+            originalError: error.originalError
+          });
+          if (error.data) {
+            const errorMessage = error.data.message || error.data.error || JSON.stringify(error.data);
+            setErrors((prev) => ({
+              ...prev,
+              api: errorMessage
+            }));
+          } else if (error.error) {
+            setErrors((prev) => ({
+              ...prev,
+              api: `Connection error: ${error.error}. Please check if the server is running and accessible.`
+            }));
+          } else {
+            setErrors((prev) => ({
+              ...prev,
+              api: "Registration failed. Please check your connection and try again."
+            }));
+          }
+        });
     }
   };
 
@@ -103,7 +142,17 @@ export function RegisterPage() {
                 <Text style={styles.errorText}>{errors.confirmPassword}</Text>
               )}
 
-              <MyButton title="Sign Up" onPress={validateAndSubmit} />
+              <MyButton
+                title="Sign Up"
+                onPress={validateAndSubmit}
+                disabled={isLoading}
+              />
+
+              {errors.api && (
+                <Text style={[styles.errorText, { textAlign: "center" }]}>
+                  {errors.api}
+                </Text>
+              )}
             </View>
           </View>
         </ScrollView>
@@ -137,7 +186,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     paddingHorizontal: 20,
-    paddingBottom: 20, 
+    paddingBottom: 20,
   },
   errorText: {
     color: "red",
