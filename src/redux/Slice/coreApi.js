@@ -1,44 +1,28 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL } from '@env';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { BASE_URL, FEATURE_ENABLED } from '@env';
 
-// Fallback URL in case environment variables don't load properly
-const baseUrl = BASE_URL || 'http://192.168.1.57:7777';
-console.log('API Base URL:', baseUrl); // Debug log to verify the URL
-
-// Test server connectivity
-const testServerConnectivity = async () => {
-  try {
-    const response = await fetch(baseUrl);
-    console.log('Server connectivity test:', response.status, response.statusText);
-    return response.ok;
-  } catch (error) {
-    console.error('Server connectivity test failed:', error.message);
-    return false;
-  }
-};
-
-// Run the test immediately
-testServerConnectivity();
 
 export const coreApi = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
-        baseUrl: baseUrl,
-        prepareHeaders: (headers) => {
-            headers.set('Content-Type', 'application/json');
-            headers.set('Accept', 'application/json');
-            return headers;
+        baseUrl: BASE_URL || "http://localhost:7777",
+        timeout: 10000, // Add a 10-second timeout
+        prepareHeaders: (headers, { getState }) => {
+          // Get the token from the state
+          const token = getState().auth.token;
+          
+          // If we have a token, include it in the headers
+          if (token) {
+            headers.set('authorization', `Bearer ${token}`);
+          }
+          
+          headers.set('Content-Type', 'application/json');
+          headers.set('Accept', 'application/json');
+          return headers;
         },
-        // Add custom error handling
-        validateStatus: (response, result) => {
-            if (response.status >= 200 && response.status < 300) {
-                return true;
-            }
-            console.error('API Error:', response.status, response.statusText);
-            return false;
-        }
+
     }),
-    tagTypes: ['Medicine', 'User', 'Request', 'Orders'],
+    tagTypes: ['Medicine', 'User', 'Request', 'Orders' , 'review'],
     endpoints: () => ({})
 })
 console.log('Core API:', coreApi);

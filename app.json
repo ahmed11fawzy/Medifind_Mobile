@@ -1,5 +1,7 @@
 {
   "expo": {
+    "platforms": ["ios", "android", "web"],
+
     "name": "Medi_Mob",
     "slug": "Medi_Mob",
     "version": "1.0.0",
