@@ -51,6 +51,7 @@ export function RegisterPage({ navigation }) {
 
     if (Object.keys(newErrors).length === 0) {
       console.log("Attempting registration with:", { name, email, password });
+      console.log("Using base URL:", process.env.BASE_URL);
       userRegister({ name, email, password })
         .unwrap()
         .then((response) => {
@@ -63,22 +64,25 @@ export function RegisterPage({ navigation }) {
           navigation.navigate("Login");
         })
         .catch((error) => {
-          console.error("Registration error:", error);
+          console.error("Registration error details:", {
+            status: error.status,
+            error: error.error,
+            data: error.data,
+            originalStatus: error.originalStatus,
+            originalError: error.originalError
+          });
           if (error.data) {
-            // Handle specific error messages from the server
             const errorMessage = error.data.message || error.data.error || JSON.stringify(error.data);
             setErrors((prev) => ({
               ...prev,
               api: errorMessage
             }));
           } else if (error.error) {
-            // Handle RTK Query error
             setErrors((prev) => ({
               ...prev,
-              api: error.error
+              api: `Connection error: ${error.error}. Please check if the server is running and accessible.`
             }));
           } else {
-            // Generic error if no specific message
             setErrors((prev) => ({
               ...prev,
               api: "Registration failed. Please check your connection and try again."

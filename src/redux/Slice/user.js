@@ -1,4 +1,5 @@
 import { coreApi } from "./coreApi"
+import { BASE_URL } from '@env';
 
 export const user = coreApi.injectEndpoints({
     endpoints: (build) => ({
@@ -23,25 +24,50 @@ export const user = coreApi.injectEndpoints({
             query: () => ({
                 url: 'users',
                 method: "GET"
-
             }),
             providesTags: ['User']
         }),
         userRegister: build.mutation({
-            query: (body) => ({
-                url: `register`,
-                method: "POST",
-                body,
-                responseHandler: 'text',  // Add this to get raw response
-            }),
-            transformResponse: (response, meta) => ({
-                data: JSON.parse(response),
-                headers: meta.response.headers
-            }),
+            query: (body) => {
+                console.log('Making registration request to:', `${BASE_URL}/register`);
+                return {
+                    url: `register`,
+                    method: "POST",
+                    body,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    responseHandler: 'text',
+                };
+            },
+            transformResponse: (response, meta) => {
+                console.log('Registration response:', response);
+                return {
+                    data: JSON.parse(response),
+                    headers: meta.response.headers
+                };
+            },
+            transformErrorResponse: (response) => {
+                console.error('Registration error response:', response);
+                return response;
+            },
             providesTags: ['User']
+        }),
+        updateUser: build.mutation({
+            query: ({ id, body, token }) => ({
+                url: `user/${id}`,
+                method: 'PATCH',
+                body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            }),
+            invalidatesTags: ['User'],
         }),
     })
 })
 
-
-export const { useUserLoginMutation, useGetAllUsersQuery, useUserRegisterMutation } = user
+export const { useUserLoginMutation, useGetAllUsersQuery, useUserRegisterMutation, useUpdateUserMutation } = user

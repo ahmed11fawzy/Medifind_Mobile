@@ -45,7 +45,7 @@ export default function Login({ navigation }) {
 
                 if (response?.data) {
                     Alert.alert('Success', 'Login successful');
-                    navigation.navigate('Home');
+                    navigation.navigate('ProfilePage');
                 }
             } catch (error) {
                 console.error('Login error details:', error);
