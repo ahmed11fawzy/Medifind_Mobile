@@ -4,7 +4,7 @@ export const review = coreApi.injectEndpoints({
     endpoints: (build) => ({
 
         addReview: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `medicine/${id}`,
                 method: 'PATCH',
                 body,

@@ -24,7 +24,7 @@ export  const orders = coreApi.injectEndpoints({
         }),
 
         updateOrder: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `orders/${id}`,
                 method: 'PATCH',
                 body,

@@ -15,7 +15,7 @@ export const request = coreApi.injectEndpoints({
             invalidatesTags: ['Request']
         }),
         updateRequest: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `request/${id}`,
                 method: 'PATCH',
                 body,

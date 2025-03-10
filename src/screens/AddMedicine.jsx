@@ -1,4 +1,3 @@
-
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
@@ -6,20 +5,22 @@ import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import { useAddMedicineMutation } from "../redux/Slice/medicine"; 
+import { useAddMedicineMutation, useUpdateMedicineMutation } from "../redux/Slice/medicine"; 
+import { useAuth } from "../hooks/useAuth";
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const theme = {
   colors: {
     primary: "#66d5c1",
     onSurfaceVariant: "#2ab5a0",
-    background: "#f0fdf9",
+    background: "#ffffff",
     text: "#333",
     error: "#D32F2F",
   },
-
 };
 
 export const AddMedicine = () => {
+  // States
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -28,14 +29,24 @@ export const AddMedicine = () => {
   const [isUploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Hooks (Always at the top)
   const [addMedicine, { isLoading, isError }] = useAddMedicineMutation();
+  const [updateMedicine] = useUpdateMedicineMutation();
+  const auth = useAuth();
+  const navigation = useNavigation();
+  const route = useRoute();
+  
+  const isAuthenticated = auth.isAuthenticated;
+  const userId = auth.userId;
+  
+  const med_id = route.params?.med_id || null;
 
   const handleImagePick = async () => {
     console.log("Image picker clicked!");
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
@@ -59,11 +70,12 @@ export const AddMedicine = () => {
         );
 
         setImg(response.data.secure_url);
-        setUploading(false);
       }
     } catch (error) {
       console.error("Image Picker Error:", error);
       Alert.alert("Error", "Something went wrong while picking the image.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -78,19 +90,44 @@ export const AddMedicine = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate.toISOString().split("T")[0]);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateInputs()) return;
 
     try {
-      await addMedicine({ name, expire_date: date, concentration, image_path: img }).unwrap();
-      Alert.alert("Success", "Medicine added successfully!");
+      const requestData = {
+        name,
+        expire_date: date,
+        concentration,
+        image_path: img,
+        user_id: userId,
+      };
+
+      if (med_id) {
+        await updateMedicine({ id: med_id, ...requestData }).unwrap();
+        Alert.alert("Success", "Medicine updated successfully!");
+      } else {
+        await addMedicine(requestData).unwrap();
+        Alert.alert("Success", "Medicine added successfully!");
+      }
+
+      // Reset the form
       setName("");
       setDate("");
       setConcentration("");
       setImg("");
       setErrors({});
+      navigation.navigate("Donations");
+
     } catch (error) {
-      Alert.alert("Error", "Failed to add medicine.");
+      console.error("API Error:", error);
+      Alert.alert("Error", "Failed to process the medicine.");
     }
   };
 
@@ -110,7 +147,6 @@ export const AddMedicine = () => {
           onChangeText={setName}
           mode="outlined"
           style={styles.input}
-            outlineColor="transparent"
         />
         {errors.name && <HelperText type="error">{errors.name}</HelperText>}
 
@@ -120,7 +156,6 @@ export const AddMedicine = () => {
           value={date}
           onFocus={() => setShowDatePicker(true)}
           mode="outlined"
-          outlineColor="transparent"
           style={styles.input}
           right={<TextInput.Icon icon="calendar" color="#43a694" onPress={() => setShowDatePicker(true)} />}
         />
@@ -132,23 +167,16 @@ export const AddMedicine = () => {
             mode="date"
             display="calendar"
             minimumDate={new Date()}
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setDate(selectedDate.toISOString().split("T")[0]);
-              }
-            }}
+            onChange={handleDateChange}
           />
         )}
 
         {/* Medicine Concentration Input */}
         <TextInput
           label="Medicine Concentration"
-          labelStyle={{ fontSize: 38 }}
           value={concentration}
           onChangeText={setConcentration}
           mode="outlined"
-          outlineColor="transparent"
           style={styles.input}
         />
         {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
@@ -172,15 +200,15 @@ export const AddMedicine = () => {
         <Button
           style={styles.button}
           mode="contained"
-          onPress={handleSubmit}
           loading={isLoading || isUploading}
           disabled={isLoading || isUploading}
           textColor="white"
+          onPress={handleSubmit}
         >
-          {isLoading || isUploading ? "Adding..." : "Add Medicine"}
+          {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
         </Button>
 
-        {isError && <HelperText type="error">Failed to add medicine</HelperText>}
+        {isError && <HelperText type="error">Failed to process medicine</HelperText>}
       </View>
     </PaperProvider>
   );
@@ -189,22 +217,17 @@ export const AddMedicine = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
     paddingVertical: 20,
-    backgroundColor: "#f0fdf9",
+    backgroundColor: "#ffffff",
   },
   input: {
-    backgroundColor: "#fff",
     marginBottom: 12,
     width: "100%",
     borderRadius: 12,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "transparent",
-    elevation:5,
   },
   button: {
     backgroundColor: "#24d1b7",
@@ -213,8 +236,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignSelf: "center",
     paddingVertical: 10,
-    elevation: 3,
   },
+  
   imagePickerContainer: {
     width: "100%",
     alignItems: "center",
@@ -230,9 +253,8 @@ const styles = StyleSheet.create({
     borderColor: "#66d5c1",
     padding: 10,
     width: "100%",
-    elevation: 2,
   },
-  imagePreview: {
+  imagePreview:{
     width: 100,
     height: 100,
     borderRadius: 12,
@@ -242,4 +264,3 @@ const styles = StyleSheet.create({
 });
 
 export default AddMedicine;
-

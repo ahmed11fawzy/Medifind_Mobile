@@ -44,7 +44,7 @@ export const medicine = coreApi.injectEndpoints({
         }),
 
         updateMedicine: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `medicine/${id}`,
                 method: 'PATCH',
                 body,
@@ -61,10 +61,14 @@ export const medicine = coreApi.injectEndpoints({
   
     }),
         deleteMedicine: build.mutation({
-        query: (id) => ({
-            url: `medicine/${id}`,
+        query: ({user_id,medicine_id}) => ({
+            url: `medicine/${user_id}`,
             method: "DELETE",
             responseHandler: "text",
+            headers: {
+                "Content-Type": "application/json",
+                 req_id: medicine_id
+            }
         }),
         invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
        }),
