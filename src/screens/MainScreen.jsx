@@ -3,9 +3,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Provider as PaperProvider } from 'react-native-paper';
-import {AddMedicine} from './AddMedicine';
-import { Donations } from './Donations';
+import {AddMedicine} from './AddMedicine';  
+import {Donations} from './Donations';
 import { ProfilePage } from './Profile';
+import {RequestsReview} from './RequestsReview';
+
+
+
 import {Home} from './Home';
 import Login from './Login';
 import { RegisterPage } from './RegisterPage';
@@ -13,7 +17,6 @@ import {DrawerContent} from '../components/MyDrawer';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-
 const MainScreen = () => {
   return (
     <PaperProvider>

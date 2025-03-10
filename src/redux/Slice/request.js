@@ -1,5 +1,5 @@
-import { corApi } from './coreApi'
-export const request = corApi.injectEndpoints({
+import { coreApi } from './coreApi'
+export const request = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addRequest: build.mutation({
             query: (body) => ({
@@ -15,7 +15,7 @@ export const request = corApi.injectEndpoints({
             invalidatesTags: ['Request']
         }),
         updateRequest: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `request/${id}`,
                 method: 'PATCH',
                 body,
@@ -39,8 +39,6 @@ export const request = corApi.injectEndpoints({
         }),
         invalidatesTags: ["Request"], // Invalidate cache to refetch updated data
     }),
-
-
         getUserRequests: build.query({
             query: (id) => ({
                 url: `request/${id}`,
@@ -53,11 +51,10 @@ export const request = corApi.injectEndpoints({
                 url:  `request`,
                 method: `GET`
             }),
-                providesTags:['Request']
+                providesTags:['Request'],
+                overrideExisting: true
             }),
 
-       
-       
 })
 })
 export const { useAddRequestMutation
@@ -65,6 +62,5 @@ export const { useAddRequestMutation
               ,useDeleteRequestMutation
               ,useGetUserRequestsQuery
               , useGetAllRequestsQuery
-              
              
               } = request;

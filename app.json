@@ -1,6 +1,9 @@
 {
   "expo": {
     "platforms": ["ios", "android", "web"],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
 
     "name": "Medi_Mob",
     "slug": "Medi_Mob",

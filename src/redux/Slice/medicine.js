@@ -33,15 +33,18 @@ export const medicine = coreApi.injectEndpoints({
                 body,
                 responseHandler: 'text',  // Add this to get raw response
             }),
-            transformResponse: (response, meta) => ({
-                data: JSON.parse(response),
-                headers: meta.response.headers
-            }),
+                transformResponse: (response, meta) => ({
+            data: JSON.parse(response),
+            headers: {
+                "content-type": meta.response.headers.get("content-type"),
+                "content-length": meta.response.headers.get("content-length"),
+            }
+                    }),
             invalidatesTags: ['Medicine']
         }),
 
         updateMedicine: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `medicine/${id}`,
                 method: 'PATCH',
                 body,
@@ -58,15 +61,21 @@ export const medicine = coreApi.injectEndpoints({
   
     }),
         deleteMedicine: build.mutation({
-        query: (id) => ({
-            url: `medicine/${id}`,
+        query: ({user_id,medicine_id}) => ({
+            url: `medicine/${user_id}`,
             method: "DELETE",
             responseHandler: "text",
+            headers: {
+                "Content-Type": "application/json",
+                 req_id: medicine_id
+            }
         }),
         invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
        }),
  
-}) })
+}) ,
+overrideExisting: true,
+})
 
 export const { useGetAllMedicinesQuery
                 ,useGetUserOffersQuery

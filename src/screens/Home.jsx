@@ -7,8 +7,11 @@ import { FlatList } from "react-native";
 import { useGetAcceptedMedicinesQuery } from "../redux/Slice/medicine"
 import { RoundedCard } from "../Component/roundedCard";
 import { useAuth } from '../hooks/useAuth';
+import { useNavigation } from '@react-navigation/native'; 
+
 export function Home() {
   const { isAuthenticated, userId, tokenData, userRole } = useAuth();
+  const navigation = useNavigation();
 
   if (isAuthenticated) {
     console.log(userId);
@@ -28,7 +31,8 @@ export function Home() {
         communities. By giving the gift of health, you're offering more than just medicine - you're offering a chance at a healthier,
         brighter future. Donate today and become a vital part of our healing mission.
       </Text>
-      <Button style={[Style.width50, Styles.mY]} mode="elevated" textColor={Colors.baseColor} buttonColor={Colors.mainColor} onPress={() => console.log('Pressed')}>
+      <Button style={[Style.width50, Styles.mY]} mode="elevated" textColor={Colors.baseColor} buttonColor={Colors.mainColor}  onPress={() => navigation.navigate("AddMedicine")} 
+      >
         Donate
       </Button>
       <Text variant="headlineLarge" style={[Styles.mY]} > Available Medicine </Text>
