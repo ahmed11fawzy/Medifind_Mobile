@@ -2,12 +2,22 @@ import { coreApi } from "./coreApi";
 
 export const medicine = coreApi.injectEndpoints({
     endpoints: (build) => ({
-        getAllMedicines: build.query({
+        getAllMedicines: build.query({    //why i need it? -->for doctor view in offersReview 
             query: () => ({
-                url: 'medicine',
+                url: 'medicine', 
                 method: 'GET',
             }),
             providesTags: ['Medicine']
+        }),
+
+        getUserOffers:build.query({    //for donation screen
+            query:(id)=>({
+                url:`medicine/${id}`,
+                method: 'Get',
+
+            }),
+            providesTags:['Medicine']
+
         }),
         getAcceptedMedicines: build.query({
             query: () => ({
@@ -27,9 +37,42 @@ export const medicine = coreApi.injectEndpoints({
                 data: JSON.parse(response),
                 headers: meta.response.headers
             }),
-            providesTags: ['Medicine']
+            invalidatesTags: ['Medicine']
         }),
-    })
-})
 
-export const { useGetAllMedicinesQuery, useGetAcceptedMedicinesQuery, useAddMedicineMutation } = medicine
+        updateMedicine: build.mutation({
+            query: ({ id, body }) => ({
+                url: `medicine/${id}`,
+                method: 'PATCH',
+                body,
+                responseHandler: 'text',
+
+            }),
+
+        transformResponse: (response, meta) => ({
+            data: JSON.parse(response),
+            headers: meta.response.headers
+
+    }),
+    invalidatesTags: ['Medicine']
+  
+    }),
+        deleteMedicine: build.mutation({
+        query: (id) => ({
+            url: `medicine/${id}`,
+            method: "DELETE",
+            responseHandler: "text",
+        }),
+        invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
+       }),
+ 
+}) })
+
+export const { useGetAllMedicinesQuery
+                ,useGetUserOffersQuery
+                , useGetAcceptedMedicinesQuery
+                , useAddMedicineMutation 
+                ,useUpdateMedicineMutation   
+                , useDeleteMedicineMutation
+                
+                    } = medicine

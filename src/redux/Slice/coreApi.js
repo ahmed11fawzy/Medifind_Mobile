@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { BASE_URL, FEATURE_ENABLED } from '@env';
 
+
 export const coreApi = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
@@ -19,8 +20,9 @@ export const coreApi = createApi({
           headers.set('Accept', 'application/json');
           return headers;
         },
+
     }),
-    tagTypes: ['Medicine', 'User', 'Request', 'Orders'],
+    tagTypes: ['Medicine', 'User', 'Request', 'Orders' , 'review'],
     endpoints: () => ({})
 })
 

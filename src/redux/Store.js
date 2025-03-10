@@ -3,6 +3,7 @@ import { coreApi } from './Slice/coreApi';
 import authReducer from './Slice/authSlice';
 
 export const store = configureStore({
+
   reducer: {
     [coreApi.reducerPath]: coreApi.reducer,
     auth: authReducer,
@@ -10,3 +11,4 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(coreApi.middleware),
 });
+
