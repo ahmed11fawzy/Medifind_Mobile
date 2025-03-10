@@ -68,7 +68,9 @@ export default function Login({ navigation }) {
                         }));
                         
                         Alert.alert('Success', 'Login successful');
+
                         navigation.navigate('ProfilePage');
+
                     } else {
                         console.error('No token found in response');
                         Alert.alert('Login Error', 'Authentication token not found');

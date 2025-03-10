@@ -1,4 +1,6 @@
 
+
+
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
@@ -9,6 +11,7 @@ import axios from "axios";
 import { useAddMedicineMutation, useUpdateMedicineMutation } from "../redux/Slice/medicine"; 
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation, useRoute } from '@react-navigation/native';
+
 
 const theme = {
   colors: {
@@ -21,6 +24,7 @@ const theme = {
 };
 
 export const AddMedicine = () => {
+
   // States
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
@@ -29,6 +33,7 @@ export const AddMedicine = () => {
   const [img, setImg] = useState("");
   const [isUploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({});
+
 
   // Hooks (Always at the top)
   const [addMedicine, { isLoading, isError }] = useAddMedicineMutation();
@@ -84,6 +89,7 @@ export const AddMedicine = () => {
     }
   };
 
+
   const validateInputs = () => {
     let newErrors = {};
     if (!name.trim()) newErrors.name = "Medicine name is required.";
@@ -93,6 +99,7 @@ export const AddMedicine = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
 
 
   const handleDateChange = (event, selectedDate) => {
@@ -137,6 +144,15 @@ export const AddMedicine = () => {
     }
   };
 
+  // Format date for display
+  const formatDate = (date) => {
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <PaperProvider theme={theme}>
       <View style={styles.container}>
@@ -149,20 +165,25 @@ export const AddMedicine = () => {
         {/* Medicine Name Input */}
         <TextInput
           label="Medicine Name"
-          value={name}
-          onChangeText={setName}
+          value={medicineName}
+          onChangeText={setMedicineName}
           mode="outlined"
           style={styles.input}
+          error={!!errors.medicineName}
         />
-        {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+        {errors.medicineName && <HelperText type="error">{errors.medicineName}</HelperText>}
 
         {/* Expire Date Input */}
         <TextInput
 
+
           label="Expire Date "
           value={date}
           onFocus={() => setShowDatePicker(true)}
+
           mode="outlined"
+          multiline
+          numberOfLines={3}
           style={styles.input}
           right={<TextInput.Icon icon="calendar" color="#43a694" onPress={() => setShowDatePicker(true)} />}
         />
@@ -181,14 +202,19 @@ export const AddMedicine = () => {
           />
         )}
 
+
         {/* Medicine Concentration Input */}
         <TextInput
-          label="Medicine Concentration"
-          value={concentration}
-          onChangeText={setConcentration}
+          label="Quantity"
+          value={medicineQuantity}
+          onChangeText={setMedicineQuantity}
           mode="outlined"
+          keyboardType="numeric"
           style={styles.input}
+          error={!!errors.medicineQuantity}
         />
+
+
         {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
         {/* Image Upload Section */}
@@ -216,6 +242,7 @@ export const AddMedicine = () => {
           onPress={handleSubmit}
         >
           {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
+
         </Button>
 
         {isError && <HelperText type="error">Failed to process medicine</HelperText>}

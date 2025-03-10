@@ -6,18 +6,21 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import {AddMedicine} from './AddMedicine';  
 import {Donations} from './Donations';
 import { ProfilePage } from './Profile';
-import {RequestsReview} from './RequestsReview';
-
-
 
 import {Home} from './Home';
 import Login from './Login';
 import { RegisterPage } from './RegisterPage';
+import {RequestMedicine} from './RequestMedicine';
+import { Needs } from './Needs';
+import { Update} from './Update';
+import {RequestsReview} from './RequestsReview';
 import {DrawerContent} from '../components/MyDrawer';
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 const MainScreen = () => {
+
   return (
     <PaperProvider>
       <NavigationContainer>

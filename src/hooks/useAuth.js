@@ -12,6 +12,8 @@ export const useAuth = () => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const tokenData = useSelector(selectTokenData);
 
+    console.log("Auth Hook - Token Data:", tokenData);
+
     return {
         token,
         user,
