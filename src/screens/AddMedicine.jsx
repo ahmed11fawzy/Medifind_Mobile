@@ -1,3 +1,4 @@
+
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
@@ -41,8 +42,10 @@ export const AddMedicine = () => {
   
   const med_id = route.params?.med_id || null;
 
+
   const handleImagePick = async () => {
     console.log("Image picker clicked!");
+
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -51,6 +54,7 @@ export const AddMedicine = () => {
         aspect: [4, 3],
         quality: 1,
       });
+
 
       if (!result.canceled) {
         setUploading(true);
@@ -69,6 +73,7 @@ export const AddMedicine = () => {
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
+
         setImg(response.data.secure_url);
       }
     } catch (error) {
@@ -85,10 +90,10 @@ export const AddMedicine = () => {
     if (!date.trim()) newErrors.date = "Expire date is required.";
     if (!concentration.trim()) newErrors.concentration = "Concentration is required.";
     if (!img) newErrors.img = "Medicine image is required.";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
 
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
@@ -128,6 +133,7 @@ export const AddMedicine = () => {
     } catch (error) {
       console.error("API Error:", error);
       Alert.alert("Error", "Failed to process the medicine.");
+
     }
   };
 
@@ -152,6 +158,7 @@ export const AddMedicine = () => {
 
         {/* Expire Date Input */}
         <TextInput
+
           label="Expire Date "
           value={date}
           onFocus={() => setShowDatePicker(true)}
@@ -163,11 +170,14 @@ export const AddMedicine = () => {
 
         {showDatePicker && (
           <DateTimePicker
-            value={date ? new Date(date) : new Date()}
+            testID="dateTimePicker"
+            value={date}
             mode="date"
+
             display="calendar"
             minimumDate={new Date()}
             onChange={handleDateChange}
+
           />
         )}
 
@@ -212,6 +222,14 @@ export const AddMedicine = () => {
       </View>
     </PaperProvider>
   );
+};
+
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: "#28a985",
+  },
 };
 
 const styles = StyleSheet.create({
