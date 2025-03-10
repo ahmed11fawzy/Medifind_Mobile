@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <title>MediFinder</title>
   <style>
@@ -17,9 +17,39 @@
       display: flex;
       flex-direction: column;
     }
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #00b2bc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading MediFinder...</p>
+    </div>
+  </div>
+  <script>
+    // Disable Hermes for web
+    window.HermesInternal = null;
+  </script>
 </body>
 </html> 

@@ -1,6 +1,6 @@
-import{coreApi } from './coreApi'
+import { coreApi } from './coreApi'
 
-export  const orders = coreApi.injectEndpoints({
+export const orders = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addOrder: build.mutation({
             query: (body) => ({
@@ -9,52 +9,97 @@ export  const orders = coreApi.injectEndpoints({
                 body,
                 responseHandler: 'text',
             }),
-            transformResponse: (response, meta) => ({
-                data: JSON.parse(response),
-                headers: meta.response.headers
-            }),
+            transformResponse: (response, meta) => {
+                try {
+                    console.log('Add order response:', response.substring(0, 100));
+                    return {
+                        data: JSON.parse(response),
+                        headers: meta.response.headers
+                    };
+                } catch (error) {
+                    console.error('Error parsing add order response:', error);
+                    throw new Error('Failed to parse server response');
+                }
+            },
             invalidatesTags: ['Orders']
         }),
         getOrder: build.query({
-            query: (id) => ({
-                url: `orders/${id}`,
-                method: 'GET'
-            }),
+            query: (user_id) => {
+                console.log('Fetching orders for user:', user_id);
+                return {
+                    url: `orders/${user_id}`,
+                    method: 'GET'
+                };
+            },
+            transformResponse: (response) => {
+                console.log('Get orders response:', response);
+                return response;
+            },
             providesTags: ['Orders']
         }),
 
         updateOrder: build.mutation({
-            query: ({ id, body }) => ({
-                url: `orders/${id}`,
-                method: 'PATCH',
-                body,
-                responseHandler: 'text',
-
+            query: ({ id, body }) => {
+                console.log('Updating order:', id, 'with data:', body);
+                return {
+                    url: `orders/${id}`,
+                    method: 'PATCH',
+                    body,
+                    responseHandler: 'text',
+                };
+            },
+            transformResponse: (response, meta) => {
+                try {
+                    console.log('Update order response:', response.substring(0, 100));
+                    return {
+                        data: JSON.parse(response),
+                        headers: meta.response.headers
+                    };
+                } catch (error) {
+                    console.error('Error parsing update order response:', error);
+                    throw new Error('Failed to parse server response');
+                }
+            },
+            invalidatesTags: ['Orders']
+        }),
+        
+        deleteOrder: build.mutation({
+            query: ({ req_id, user_id }) => ({
+              url: 'orders/', // نفس الـ endpoint في الـ backend
+              method: "DELETE",
+              headers: {       // إرسال الـ req_id و user_id عبر الـ headers
+                "Content-Type": "application/json",
+                "req_id": req_id,    // ارسال الـ req_id
+                "user_id": user_id,  // ارسال الـ user_id
+              },
             }),
-        transformResponse: (response, meta) => ({
-            data: JSON.parse(response),
-            headers: meta.response.headers
+            async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {
+              try {
+                await queryFulfilled;
+                console.log("✅ Order deleted successfully:", req_id);
+                dispatch(coreApi.util.invalidateTags(["Orders"])); // تحديث البيانات بعد الحذف
+              } catch (error) {
+                console.error("❌ Error deleting order:", error);
+              }
+            },
+          }),
+          
+                    
+          
+          
 
-    }),
-    invalidatesTags: ['Orders']
-    }),
-    deleteOrder: build.mutation({
-        query: (id) => ({
-            url: `orders/${id}`,
-            method: "DELETE",
-            responseHandler: "text",
+        getAllOrders: build.query({  //for doctor view in requestsReview
+            query: () => ({
+                url: 'orders',
+                method: 'GET'
+            }),
+            transformResponse: (response) => {
+                console.log('Get all orders response:', response);
+                return response;
+            },
+            providesTags: ['Orders']
         }),
-        invalidatesTags: ["Orders"], // Invalidate cache to refetch updated data
-    }),
-
-    getAllOrders:build.query({  //for doctor view in requestsReview
-        query:({
-        url:'orders',
-        method:'GET'
-        }),
-
-    providesTags:['Orders']
-}),
+    })
 })
-})
-export const {useAddOrderMutation,useGetOrderQuery,useDeleteOrderMutation,useGetAllOrdersQuery, useUpdateOrderMutation}=orders
+
+export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;

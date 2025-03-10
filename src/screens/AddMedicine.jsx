@@ -1,34 +1,9 @@
 import * as React from "react";
 import { Provider as PaperProvider, DefaultTheme, TextInput, Button, HelperText } from "react-native-paper";
 import { View, StyleSheet, Alert, Platform } from "react-native";
-import  { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
-
-export default function App() {
-  const [date, setDate] = useState(new Date());
-  const [show, setShow] = useState(false);
-
-  const onChange = (event, selectedDate) => {
-    setShow(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
-  };
-
-  return (
-    <View>
-      <Button title="Pick a Date" onPress={() => setShow(true)} />
-      {show && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={onChange}
-        />
-      )}
-    </View>
-  );
-}
+import { useState } from "react";
+// Use conditional import for DateTimePicker based on platform
+import DateTimePickerComponent from "../components/DateTimePickerComponent";
 
 const theme = {
   ...DefaultTheme,
@@ -39,53 +14,42 @@ const theme = {
 };
 
 export const AddMedicine = () => {
-  const [name, setName] = React.useState("");
-  const [date, setDate] = React.useState("");
-  const [showDatePicker, setShowDatePicker] = React.useState(false);
-  const [concentration, setConcentration] = React.useState("");
-  const [img, setImg] = React.useState("");
-  const [errors, setErrors] = React.useState({});
+  const [medicineName, setMedicineName] = useState("");
+  const [medicineDescription, setMedicineDescription] = useState("");
+  const [medicineQuantity, setMedicineQuantity] = useState("");
+  const [expiryDate, setExpiryDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const onChangeDate = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-      setDate(formattedDate);
+      setExpiryDate(selectedDate);
     }
   };
 
   const validateForm = () => {
     let newErrors = {};
 
-    if (!name) {
-      newErrors.name = "Medicine name is required";
-    } else if (/\d/.test(name)) {
-      newErrors.name = "Medicine name should not contain numbers";
+    if (!medicineName.trim()) {
+      newErrors.medicineName = "Medicine name is required";
     }
 
-    if (!date) {
-      newErrors.date = "Expire date is required";
-    } else {
-      const enteredDate = new Date(date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (enteredDate < today) {
-        newErrors.date = "Expire date cannot be in the past";
-      }
+    if (!medicineDescription.trim()) {
+      newErrors.medicineDescription = "Medicine description is required";
     }
 
-    if (!concentration) {
-      newErrors.concentration = "Medicine concentration is required";
-    } else if (!/^\d+(mg|ml|%)$/.test(concentration)) {
-      newErrors.concentration = "Invalid format (e.g., 500mg, 10ml, 2%)";
+    if (!medicineQuantity.trim()) {
+      newErrors.medicineQuantity = "Medicine quantity is required";
+    } else if (isNaN(medicineQuantity) || parseInt(medicineQuantity) <= 0) {
+      newErrors.medicineQuantity = "Quantity must be a positive number";
     }
 
-    if (!img) {
-      newErrors.img = "Image URL is required";
-    // } else if (!/^https?:\/\/.*\.(jpeg|jpg|png|gif)$/.test(img)) {
-    //   newErrors.img = "Invalid image URL (must end with .jpg, .png, .jpeg, .gif)";
+    // Check if expiry date is in the future
+    const today = new Date();
+    if (expiryDate < today) {
+      newErrors.expiryDate = "Expiry date must be in the future";
     }
-    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -93,13 +57,35 @@ export const AddMedicine = () => {
 
   const handleSubmit = () => {
     if (validateForm()) {
+      // Format the date as YYYY-MM-DD
+      const formattedDate = expiryDate.toISOString().split("T")[0];
+
+      const medicineData = {
+        name: medicineName,
+        description: medicineDescription,
+        quantity: parseInt(medicineQuantity),
+        expiryDate: formattedDate,
+      };
+
+      console.log("Medicine data:", medicineData);
       Alert.alert("Success", "Medicine added successfully!");
-    setName("");
-    setDate("");
-    setConcentration("");
-    setImg("");
-    
+
+      // Reset form
+      setMedicineName("");
+      setMedicineDescription("");
+      setMedicineQuantity("");
+      setExpiryDate(new Date());
+      setErrors({});
     }
+  };
+
+  // Format date for display
+  const formatDate = (date) => {
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
@@ -107,54 +93,62 @@ export const AddMedicine = () => {
       <View style={styles.container}>
         <TextInput
           label="Medicine Name"
-          value={name}
-          onChangeText={setName}
+          value={medicineName}
+          onChangeText={setMedicineName}
           mode="outlined"
           style={styles.input}
+          error={!!errors.medicineName}
         />
-        {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+        {errors.medicineName && <HelperText type="error">{errors.medicineName}</HelperText>}
 
         <TextInput
-          label="Expire Date (YYYY-MM-DD)"
-          value={date}
-          onFocus={() => setShowDatePicker(true)} // Open picker when focused
+          label="Description"
+          value={medicineDescription}
+          onChangeText={setMedicineDescription}
           mode="outlined"
+          multiline
+          numberOfLines={3}
           style={styles.input}
-          right={<TextInput.Icon icon="calendar" onPress={() => setShowDatePicker(true)} />}
+          error={!!errors.medicineDescription}
         />
-        {errors.date && <HelperText type="error">{errors.date}</HelperText>}
+        {errors.medicineDescription && <HelperText type="error">{errors.medicineDescription}</HelperText>}
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={date ? new Date(date) : new Date()}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "calendar"}
-            minimumDate={new Date()} // Prevent past dates
-            onChange={onChangeDate}
+        <TextInput
+          label="Quantity"
+          value={medicineQuantity}
+          onChangeText={setMedicineQuantity}
+          mode="outlined"
+          keyboardType="numeric"
+          style={styles.input}
+          error={!!errors.medicineQuantity}
+        />
+        {errors.medicineQuantity && <HelperText type="error">{errors.medicineQuantity}</HelperText>}
+
+        <View style={styles.dateContainer}>
+          <TextInput
+            label="Expiry Date"
+            value={formatDate(expiryDate)}
+            mode="outlined"
+            style={styles.dateInput}
+            editable={false}
+            error={!!errors.expiryDate}
           />
-        )}
+          <Button mode="contained" onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+            Select Date
+          </Button>
+        </View>
+        {errors.expiryDate && <HelperText type="error">{errors.expiryDate}</HelperText>}
 
-        <TextInput
-          label="Medicine Concentration"
-          value={concentration}
-          onChangeText={setConcentration}
-          mode="outlined"
-          style={styles.input}
+        {/* Use our custom DateTimePicker component */}
+        <DateTimePickerComponent
+          show={showDatePicker}
+          date={expiryDate}
+          onChange={onChangeDate}
+          onClose={() => setShowDatePicker(false)}
         />
-        {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
-        <TextInput
-          label="Medicine Image URL"
-          value={img}
-          onChangeText={setImg}
-          mode="outlined"
-          style={styles.input}
-          right={<TextInput.Icon icon="camera" />}
-        />
-        {errors.img && <HelperText type="error">{errors.img}</HelperText>}
-
-        <Button style={styles.button} mode="contained" onPress={handleSubmit}>
-          Add
+        <Button mode="contained" onPress={handleSubmit} style={styles.submitButton}>
+          Add Medicine
         </Button>
       </View>
     </PaperProvider>
@@ -164,26 +158,26 @@ export const AddMedicine = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    padding: 16,
+    backgroundColor: "#fff",
   },
   input: {
-    backgroundColor: "#e5f8f7",
-    marginBottom: 10,
-    width: "100%",
-    borderRadius: 10,
-    marginVertical: 5,
+    marginBottom: 8,
   },
-  button: {
-    backgroundColor: "#66d5c1",
-    marginTop: 10,
-    width: "40%",
-    borderRadius: 10,
-    alignSelf: "center",
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
-}
-);
+  dateInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  dateButton: {
+    marginLeft: 8,
+  },
+  submitButton: {
+    marginTop: 16,
+  },
+});
 

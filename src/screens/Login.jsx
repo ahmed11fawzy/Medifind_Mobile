@@ -68,7 +68,7 @@ export default function Login({ navigation }) {
                         }));
                         
                         Alert.alert('Success', 'Login successful');
-                        navigation.navigate('Home');
+                        navigation.navigate('RequestMedicine');
                     } else {
                         console.error('No token found in response');
                         Alert.alert('Login Error', 'Authentication token not found');
@@ -89,7 +89,7 @@ export default function Login({ navigation }) {
                 } else {
                     Alert.alert(
                         'Login Failed',
-                        error.data?.message || 'Invalid credentials. Please check your email and password.'
+                        error.data?.message || 'Invalid credentials'
                     );
                 }
             }

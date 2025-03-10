@@ -4,18 +4,23 @@ import { TextInput, Button } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
-import { useAddOrderMutation, useGetOrderQuery } from "../redux/Slice/order";
+import { useAddOrderMutation, useGetOrderQuery, useUpdateOrderMutation  } from "../redux/Slice/order";
+import { useRoute } from "@react-navigation/native";
 import { useAuth } from "../hooks/useAuth"
 
-export const RequestMedicine = () => {
+export const Update = () => {
   const navigation = useNavigation();
+  const route = useRoute();  // للحصول على البيانات التي تم تمريرها من صفحة Needs
+  const { orderId } = route.params; 
   const { userId } = useAuth();
   const [imageUri, setImageUri] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({ medicineName: false, description: false });
   const [addOrder, { isLoading }] =  useAddOrderMutation();
-  const [medicineName, setMedicineName] = useState();
-  const [description, setDescription] = useState();
+  const { data: orderData, error } = useGetOrderQuery(orderId);
+  const [updateOrder] = useUpdateOrderMutation();  
+  const [medicineName, setMedicineName] = useState(orderData?.req_name || "");
+  const [description, setDescription] = useState(orderData?.req_description || "");
 
   useLayoutEffect(() => {
    
@@ -35,7 +40,21 @@ export const RequestMedicine = () => {
         </View>
       ),
     });
-  }, [navigation]); 
+  }, [navigation, orderId]);
+  const handleSubmit = async () => {
+    try {
+      const updatedOrder = {
+        req_name: medicineName,
+        req_description: description,
+        prescription_img: imageUri,
+      };
+      await updateOrder({ id: orderId, body: updatedOrder }).unwrap();
+      navigation.goBack();  // الرجوع بعد التحديث لصفحة Needs
+    } catch (error) {
+      console.error("Error updating order:", error);
+    }
+  };
+  
   const pickImage = async () => {
     try {
       const isWeb = Platform.OS === 'web';
@@ -256,7 +275,7 @@ export const RequestMedicine = () => {
         error={errors.description}
       />
       {errors.description && <Text style={styles.errorText}>Description is required.</Text>}
-      <Button mode="contained" onPress={validateForm} style={styles.button} disabled={isLoading || uploading}> 
+      <Button mode="contained" onPress={handleSubmit} style={styles.button} disabled={isLoading || uploading}> 
          {isLoading ? "Submitting..." : "Add Request"}
       </Button>
     </View>
