@@ -1,5 +1,6 @@
 import { coreApi } from './coreApi'
 
+
 export const orders = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addOrder: build.mutation({
@@ -39,6 +40,7 @@ export const orders = coreApi.injectEndpoints({
         }),
 
         updateOrder: build.mutation({
+
             query: ({ id, body }) => {
                 console.log('Updating order:', id, 'with data:', body);
                 return {
@@ -61,6 +63,7 @@ export const orders = coreApi.injectEndpoints({
                 }
             },
             invalidatesTags: ['Orders']
+
         }),
         
         deleteOrder: build.mutation({
@@ -98,8 +101,13 @@ export const orders = coreApi.injectEndpoints({
                 return response;
             },
             providesTags: ['Orders']
+
         }),
     })
 })
 
+
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
+
+})
+

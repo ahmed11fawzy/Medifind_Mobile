@@ -1,7 +1,6 @@
-import { coreApi} from './coreApi'
 
-console.log('Core API:', coreApi);
-console.log('Inject Endpoints:', coreApi.injectEndpoints);
+import { coreApi } from './coreApi'
+
 export const request = coreApi.injectEndpoints({
     endpoints: (build) => ({
         addRequest: build.mutation({
@@ -45,7 +44,7 @@ export const request = coreApi.injectEndpoints({
             invalidatesTags: ['Request']
         }),
         updateRequest: build.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, ...body }) => ({
                 url: `request/${id}`,
                 method: 'PATCH',
                 body,
@@ -69,8 +68,6 @@ export const request = coreApi.injectEndpoints({
         }),
         invalidatesTags: ["Request"], // Invalidate cache to refetch updated data
     }),
-
-
         getUserRequests: build.query({
             query: (id) => ({
                 url: `request/${id}`,
@@ -83,12 +80,12 @@ export const request = coreApi.injectEndpoints({
                 url:  `request`,
                 method: `GET`
             }),
-                providesTags:['Request']
+                providesTags:['Request'],
+                overrideExisting: true
             }),
 
-       
-       
 })
+
 });
-console.log('Request API:', request);
+
 export const { useAddRequestMutation,useUpdateRequestMutation,useDeleteRequestMutation,useGetUserRequestsQuery, useGetAllRequestsQuery} = request;

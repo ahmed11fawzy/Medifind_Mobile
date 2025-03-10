@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -14,19 +14,27 @@ import * as ImagePicker from "expo-image-picker";
 import { MyTextInput } from "../components/MyTextInput";
 import { MyButton } from "../components/MyButton";
 import axios from "axios";
-import { useUpdateUserMutation } from "../redux/Slice/user";
+import { useUpdateUserMutation, useGetUserByIdQuery } from "../redux/Slice/user";
+import { useAuth } from "../hooks/useAuth";
 
-export const ProfilePage = () => {
+export const ProfilePage = ({ navigation }) => {
+  const { user, userId, tokenData, userName } = useAuth();
+  
+  // Fetch user details using the ID from token
+  const { data: userData, isLoading: isLoadingUser, error: userError, refetch: refetchUser } = useGetUserByIdQuery(userId);
+  console.log('User Data in Profile:', userData);
+  console.log('User Name:', userData?.name);
+
   const [profileImage, setProfileImage] = useState(null);
-  const [name, setName] = useState("Anna Avetisyan");
-  const [idNumber, setIdNumber] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+ 
+  const [ssn, setssn] = useState("");
+  const [phone, setphone] = useState("");
   const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
 
   // Error State Variables
-  const [idNumberError, setIdNumberError] = useState("");
-  const [phoneNumberError, setPhoneNumberError] = useState("");
+  const [ssnError, setssnError] = useState("");
+  const [phoneError, setphoneError] = useState("");
   const [cityError, setCityError] = useState("");
   const [streetError, setStreetError] = useState("");
   const [profileImageError, setProfileImageError] = useState("");
@@ -36,6 +44,24 @@ export const ProfilePage = () => {
 
   // Redux mutation hook
   const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserMutation();
+
+  // Use effect to update fields when user data changes
+  useEffect(() => {
+    if (userData) {
+      console.log('Setting user data from API:', userData);
+      // Handle array response
+      const user = Array.isArray(userData) ? userData[0] : userData;
+      console.log('Processed user data:', user);
+      
+      setssn(user.ssn || "");
+      setphone(user.phone || "");
+      setCity(user.city || "");
+      setStreet(user.street || "");
+      if (user.profileImage) {
+        setProfileImage(user.profileImage);
+      }
+    }
+  }, [userData]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -94,8 +120,8 @@ export const ProfilePage = () => {
     let isValid = true;
 
     // Reset Errors
-    setIdNumberError("");
-    setPhoneNumberError("");
+    setssnError("");
+    setphoneError("");
     setCityError("");
     setStreetError("");
     setProfileImageError("");
@@ -105,19 +131,19 @@ export const ProfilePage = () => {
       isValid = false;
     }
 
-    if (!idNumber) {
-      setIdNumberError("ID Number is required.");
+    if (!ssn) {
+      setssnError("ID Number is required.");
       isValid = false;
-    } else if (!/^\d{14}$/.test(idNumber)) {
-      setIdNumberError("ID Number must be exactly 14 digits.");
+    } else if (!/^\d{14}$/.test(ssn)) {
+      setssnError("ID Number must be exactly 14 digits.");
       isValid = false;
     }
 
-    if (!phoneNumber) {
-      setPhoneNumberError("Phone Number is required.");
+    if (!phone) {
+      setphoneError("Phone Number is required.");
       isValid = false;
-    } else if (!/^01(0|1|2|5)\d{8}$/.test(phoneNumber)) {
-      setPhoneNumberError("Phone Number must be an Egyptian number ");
+    } else if (!/^01(0|1|2|5)\d{8}$/.test(phone)) {
+      setphoneError("Phone Number must be an Egyptian number ");
       isValid = false;
     }
 
@@ -135,14 +161,14 @@ export const ProfilePage = () => {
   };
 
   const clearInputs = () => {
-    setIdNumber("");
-    setPhoneNumber("");
+    setssn("");
+    setphone("");
     setCity("");
     setStreet("");
     setProfileImage(null);
 
-    setIdNumberError("");
-    setPhoneNumberError("");
+    setssnError("");
+    setphoneError("");
     setCityError("");
     setStreetError("");
     setProfileImageError("");
@@ -153,26 +179,41 @@ export const ProfilePage = () => {
       return;
     }
 
-    const imageUrl = await uploadImage();
-    if (imageUrl) {
-      try {
-        // Assuming you have the user's ID available (e.g., from login)
-        const userId = "65fc9efc344313d9a444485d"; // Replace with the actual user ID
-        const updateData = {
-          profileImage: imageUrl,
-          idNumber,
-          phoneNumber,
-          city,
-          street,
-        };
+    try {
+      let updateData = {
+       
+        ssn,
+        phone,
+        location: `${street}, ${city}`,
+      };
 
-        await updateUser({ id: userId, body: updateData }); // Use the mutation
-        Alert.alert("Success", "Profile updated successfully!");
-        clearInputs();
-      } catch (error) {
-        console.error("Update failed:", error);
-        Alert.alert("Error", "Failed to update profile.");
+      // Only upload and add image if a new one is selected
+      if (profileImage && !profileImage.startsWith('http')) {
+        const imageUrl = await uploadImage();
+        if (imageUrl) {
+          updateData.profileImage = imageUrl;
+        } else {
+          return; // Stop if image upload failed
+        }
       }
+
+      const result = await updateUser({ 
+        id: userId, 
+        body: updateData 
+      }).unwrap();
+      
+      console.log('Update result:', result);
+
+      // Refetch user data after successful update
+      refetchUser();
+
+      Alert.alert("Success", "Profile updated successfully!");
+    } catch (error) {
+      console.error("Update failed:", error);
+      Alert.alert(
+        "Error",
+        error.data?.message || "Failed to update profile. Please try again."
+      );
     }
   };
 
@@ -185,98 +226,116 @@ export const ProfilePage = () => {
           iconColor="white"
           style={{ position: "absolute", left: 10, top: 10, zIndex: 1 }}
           onPress={() => {
-            alert("Navigate Back");
+            navigation.goBack();
           }}
         />
-        <Text style={styles.headerText}>{name}</Text>
+        <Text style={styles.headerText}>
+          {isLoadingUser 
+            ? "Loading..." 
+            : (Array.isArray(userData) ? userData[0]?.name : userData?.name) || "User"}
+        </Text>
       </View>
 
-      <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={pickImage}>
-          <Avatar.Image
-            size={100}
-            source={
-              profileImage
-                ? { uri: profileImage }
-                : require("../../assets/profile.jpeg")
-            }
-          />
-        </TouchableOpacity>
-        {profileImageError !== "" && (
-          <Text style={styles.errorText}>{profileImageError}</Text>
-        )}
-      </View>
+      {userError ? (
+        <View style={[styles.content, { alignItems: 'center' }]}>
+          <Text style={{ color: 'red' }}>Error loading user data</Text>
+        </View>
+      ) : isLoadingUser ? (
+        <View style={[styles.content, { alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color="#01b3bd" />
+        </View>
+      ) : (
+        <>
+          <View style={styles.avatarContainer}>
+            <TouchableOpacity onPress={pickImage}>
+              <Avatar.Image
+                size={100}
+                source={
+                  profileImage
+                    ? { uri: profileImage }
+                    : require("../../assets/profile.jpeg")
+                }
+              />
+            </TouchableOpacity>
+            {profileImageError !== "" && (
+              <Text style={styles.errorText}>{profileImageError}</Text>
+            )}
+          </View>
 
-      <View style={styles.content}>
-        <MyTextInput
-          label="ID Number"
-          value={idNumber}
-          onChangeText={(text) => {
-            setIdNumber(text);
-            setIdNumberError(""); // Clear error on input change
-          }}
-          keyboardType="number-pad"
-        />
-        {idNumberError !== "" && (
-          <Text style={styles.errorText}>{idNumberError}</Text>
-        )}
+          <View style={styles.content}>
+           
+            
+            <MyTextInput
+              label="ID Number"
+              value={ssn}
+              onChangeText={(text) => {
+                setssn(text);
+                setssnError("");
+              }}
+              keyboardType="number-pad"
+            />
+            {ssnError !== "" && (
+              <Text style={styles.errorText}>{ssnError}</Text>
+            )}
 
-        <MyTextInput
-          label="Phone Number"
-          value={phoneNumber}
-          onChangeText={(text) => {
-            setPhoneNumber(text);
-            setPhoneNumberError(""); // Clear error on input change
-          }}
-          keyboardType="phone-pad"
-        />
-        {phoneNumberError !== "" && (
-          <Text style={styles.errorText}>{phoneNumberError}</Text>
-        )}
+            <MyTextInput
+              label="Phone Number"
+              value={phone}
+              onChangeText={(text) => {
+                setphone(text);
+                setphoneError(""); // Clear error on input change
+              }}
+              keyboardType="phone-pad"
+            />
+            {phoneError !== "" && (
+              <Text style={styles.errorText}>{phoneError}</Text>
+            )}
 
-        <MyTextInput
-          label="City"
-          value={city}
-          onChangeText={(text) => {
-            setCity(text);
-            setCityError(""); // Clear error on input change
-          }}
-        />
-        {cityError !== "" && <Text style={styles.errorText}>{cityError}</Text>}
+            <MyTextInput
+              label="City"
+              value={city}
+              onChangeText={(text) => {
+                setCity(text);
+                setCityError(""); // Clear error on input change
+              }}
+            />
+            {cityError !== "" && <Text style={styles.errorText}>{cityError}</Text>}
 
-        <MyTextInput
-          label="Street"
-          value={street}
-          onChangeText={(text) => {
-            setStreet(text);
-            setStreetError(""); // Clear error on input change
-          }}
-        />
-        {streetError !== "" && (
-          <Text style={styles.errorText}>{streetError}</Text>
-        )}
+            <MyTextInput
+              label="Street"
+              value={street}
+              onChangeText={(text) => {
+                setStreet(text);
+                setStreetError(""); // Clear error on input change
+              }}
+            />
+            {streetError !== "" && (
+              <Text style={styles.errorText}>{streetError}</Text>
+            )}
 
-        <MyButton
-          title="Update"
-          onPress={handleUpdate}
-          disabled={uploading || isUpdateLoading} // Disable the button while uploading
-        />
+            <MyButton
+              title="Update"
+              onPress={handleUpdate}
+              disabled={uploading || isUpdateLoading} // Disable the button while uploading
+            />
 
-        {uploading && (
-          <ActivityIndicator
-            size="small"
-            color="#01b3bd"
-            style={{ marginTop: 10 }}
-          />
-        )}
-        {isUpdateLoading && (
-          <ActivityIndicator
-            size="small"
-            color="#01b3bd"
-            style={{ marginTop: 10 }}
-          />
-        )}
-      </View>
+            {uploading && (
+              <ActivityIndicator
+                size="small"
+                color="#01b3bd"
+                style={{ marginTop: 10 }}
+              />
+            )}
+            {isUpdateLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#01b3bd"
+                style={{ marginTop: 10 }}
+              />
+            )}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 };
@@ -310,5 +369,16 @@ const styles = StyleSheet.create({
     marginLeft: 17,
   },
 });
+
+
+
+
+
+
+
+
+
+
+
 
 

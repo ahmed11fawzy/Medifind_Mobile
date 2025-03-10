@@ -22,6 +22,7 @@ export const coreApi = createApi({
         },
 
     }),
+
     tagTypes: ['Medicine', 'User', 'Request', 'Orders' , 'review'],
     endpoints: () => ({})
 })
