@@ -1,22 +1,19 @@
 {
   "expo": {
-    "platforms": ["ios", "android", "web"],
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-
     "name": "Medi_Mob",
     "slug": "Medi_Mob",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -27,15 +24,13 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
         "projectId": "your-project-id"
       }
     },
-    "jsEngine": "hermes",
-    "platforms": ["ios", "android", "web"]
+    "jsEngine": "hermes"
   }
 }

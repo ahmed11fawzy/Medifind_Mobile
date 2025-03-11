@@ -10,6 +10,7 @@ import { ProfilePage } from './Profile';
 import {Home} from './Home';
 import Login from './Login';
 import { RegisterPage } from './RegisterPage';
+
 import {RequestMedicine} from './RequestMedicine';
 import { Needs } from './Needs';
 import { Update} from './Update';
@@ -60,6 +61,10 @@ const MainScreen = () => {
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="RegisterPage" component={RegisterPage} />
                 <Stack.Screen name="ProfilePage" component={ProfilePage} />
+                <Stack.Screen name="RequestMedicine" component={RequestMedicine} />
+                <Stack.Screen name="Needs" component={Needs} />
+                <Stack.Screen name="Update" component={Update} />
+                <Stack.Screen name="RequestsReview" component={RequestsReview} />
               </Stack.Navigator>
             )}
           </Drawer.Screen>
