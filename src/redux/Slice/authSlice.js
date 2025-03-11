@@ -22,6 +22,7 @@ const authSlice = createSlice({
       // Decode and store token data
       if (token) {
         state.tokenData = decodeToken(token);
+        console.log("Stored Token Data in Redux:", state.tokenData);
       }
     },
     logout: (state) => {

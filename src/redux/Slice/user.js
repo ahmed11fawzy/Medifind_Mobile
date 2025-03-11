@@ -24,7 +24,7 @@ export const user = coreApi.injectEndpoints({
                     token: meta.response.headers.get('x-auth-token')
                 }
             }),
-            providesTags: ['User']
+            invalidatesTags: ['User']
         }),
         getAllUsers: build.query({
             query: () => ({
@@ -58,7 +58,8 @@ export const user = coreApi.injectEndpoints({
                 console.error('Registration error response:', response);
                 return response;
             },
-            providesTags: ['User']
+            invalidatesTags: ['User']
+
         }),
         updateUser: build.mutation({
             query: ({ id, body }) => ({

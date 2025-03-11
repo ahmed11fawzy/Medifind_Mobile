@@ -4,6 +4,7 @@ export const decodeToken = (token) => {
     try {
         // jwt-decode is a direct function import, not a default export
         const decodedToken = jwtDecode(token);
+        console.log("Decoded Token Data:", decodedToken);
         return decodedToken;
     } catch (error) {
         console.error('Error decoding token:', error);

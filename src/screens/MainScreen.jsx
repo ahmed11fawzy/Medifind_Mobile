@@ -3,18 +3,25 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Provider as PaperProvider } from 'react-native-paper';
-import {AddMedicine} from './AddMedicine';
-import { Donations } from './Donations';
+import {AddMedicine} from './AddMedicine';  
+import {Donations} from './Donations';
 import { ProfilePage } from './Profile';
+
 import {Home} from './Home';
 import Login from './Login';
 import { RegisterPage } from './RegisterPage';
+
+import {RequestMedicine} from './RequestMedicine';
+import { Needs } from './Needs';
+import { Update} from './Update';
+import {RequestsReview} from './RequestsReview';
 import {DrawerContent} from '../components/MyDrawer';
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-
 const MainScreen = () => {
+
   return (
     <PaperProvider>
       <NavigationContainer>
@@ -54,6 +61,10 @@ const MainScreen = () => {
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="RegisterPage" component={RegisterPage} />
                 <Stack.Screen name="ProfilePage" component={ProfilePage} />
+                <Stack.Screen name="RequestMedicine" component={RequestMedicine} />
+                <Stack.Screen name="Needs" component={Needs} />
+                <Stack.Screen name="Update" component={Update} />
+                <Stack.Screen name="RequestsReview" component={RequestsReview} />
               </Stack.Navigator>
             )}
           </Drawer.Screen>
