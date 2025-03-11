@@ -74,7 +74,7 @@ export const orders = coreApi.injectEndpoints({
                 "Content-Type": "application/json",
                 "req_id": req_id,    // ارسال الـ req_id
                 "user_id": user_id,  // ارسال الـ user_id
-              },
+                },
             }),
             async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {
               try {
@@ -109,5 +109,5 @@ export const orders = coreApi.injectEndpoints({
 
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
 
-})
+
 
