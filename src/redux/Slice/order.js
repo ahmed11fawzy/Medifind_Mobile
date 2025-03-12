@@ -24,20 +24,17 @@ export  const orders = coreApi.injectEndpoints({
         }),
 
         updateOrder: build.mutation({
-            query: ({ id, ...body }) => ({
+            query: ({ id, body }) => ({
                 url: `orders/${id}`,
                 method: 'PATCH',
                 body,
                 responseHandler: 'text',
-
             }),
-        transformResponse: (response, meta) => ({
-            data: JSON.parse(response),
-            headers: meta.response.headers
-
-    }),
-    invalidatesTags: ['Orders']
-    }),
+            transformResponse: (response) => ({
+                data: JSON.parse(response),
+            }),
+            invalidatesTags: ['Orders'],
+        }),
     deleteOrder: build.mutation({
         query: (id) => ({
             url: `orders/${id}`,
@@ -47,14 +44,11 @@ export  const orders = coreApi.injectEndpoints({
         invalidatesTags: ["Orders"], // Invalidate cache to refetch updated data
     }),
 
-    getAllOrders:build.query({  //for doctor view in requestsReview
-        query:({
-        url:'orders',
-        method:'GET'
-        }),
-
-    providesTags:['Orders']
-}),
+    getAllOrders: build.query({  
+        query: () => 'orders',  
+        providesTags: ['Orders']
+    }),
+    
 })
 })
 export const {useAddOrderMutation,
