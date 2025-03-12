@@ -50,12 +50,9 @@ export function RegisterPage({ navigation }) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Attempting registration with:", { name, email, password });
-      console.log("Using base URL:", process.env.BASE_URL);
       userRegister({ name, email, password })
         .unwrap()
         .then((response) => {
-          console.log("Registration successful:", response);
           setName("");
           setEmail("");
           setPassword("");

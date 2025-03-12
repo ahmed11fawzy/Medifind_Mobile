@@ -9,28 +9,46 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { Avatar, IconButton } from "react-native-paper";
+import { Avatar, IconButton, TextInput } from "react-native-paper";
+import DropDownPicker from "react-native-dropdown-picker";
 import * as ImagePicker from "expo-image-picker";
 import { MyTextInput } from "../components/MyTextInput";
 import { MyButton } from "../components/MyButton";
 import axios from "axios";
-import { useUpdateUserMutation, useGetUserByIdQuery } from "../redux/Slice/user";
+import {
+  useUpdateUserMutation,
+  useGetUserByIdQuery,
+} from "../redux/Slice/user";
 import { useAuth } from "../hooks/useAuth";
+
+// Egyptian cities list
+const egyptianCities = [
+  { label: "Cairo", value: "Cairo" },
+  { label: "Alexandria", value: "Alexandria" },
+  { label: "Giza", value: "Giza" },
+  { label: "Sharm El Sheikh", value: "Sharm El Sheikh" },
+  { label: "Luxor", value: "Luxor" },
+  { label: "Aswan", value: "Aswan" },
+];
 
 export const ProfilePage = ({ navigation }) => {
   const { user, userId, tokenData, userName } = useAuth();
-  
+
   // Fetch user details using the ID from token
-  const { data: userData, isLoading: isLoadingUser, error: userError, refetch: refetchUser } = useGetUserByIdQuery(userId);
-  console.log('User Data in Profile:', userData);
-  console.log('User Name:', userData?.name);
+  const {
+    data: userData,
+    isLoading: isLoadingUser,
+    error: userError,
+    refetch: refetchUser,
+  } = useGetUserByIdQuery(userId);
 
   const [profileImage, setProfileImage] = useState(null);
- 
+
   const [ssn, setssn] = useState("");
   const [phone, setphone] = useState("");
   const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
+  const [showDropDown, setShowDropDown] = useState(false);
 
   // Error State Variables
   const [ssnError, setssnError] = useState("");
@@ -45,13 +63,13 @@ export const ProfilePage = ({ navigation }) => {
   // Redux mutation hook
   const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserMutation();
 
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState(egyptianCities);
+
   // Use effect to update fields when user data changes
   useEffect(() => {
     if (userData) {
-      console.log('Setting user data from API:', userData);
-      // Handle array response
       const user = Array.isArray(userData) ? userData[0] : userData;
-      console.log('Processed user data:', user);
       
       setssn(user.ssn || "");
       setphone(user.phone || "");
@@ -105,7 +123,7 @@ export const ProfilePage = ({ navigation }) => {
       );
       setUploading(false);
       setProfileImageError("");
-      console.log("Image URL on Cloudinary:", response.data.secure_url); // ADDED CONSOLE LOG
+      console.log("Image URL on Cloudinary:", response.data.secure_url);
       return response.data.secure_url;
     } catch (error) {
       console.error("Upload failed:", error);
@@ -134,9 +152,31 @@ export const ProfilePage = ({ navigation }) => {
     if (!ssn) {
       setssnError("ID Number is required.");
       isValid = false;
-    } else if (!/^\d{14}$/.test(ssn)) {
-      setssnError("ID Number must be exactly 14 digits.");
+    } else if (!/^[23]\d{13}$/.test(ssn)) {
+      setssnError("Invalid Egyptian National ID.");
       isValid = false;
+    } else {
+      // Additional validation for date format within the ID
+      const century = ssn.charAt(0);
+      const year = ssn.substr(1, 2);
+      const month = ssn.substr(3, 2);
+      const day = ssn.substr(5, 2);
+      
+      // Convert to actual date
+      const birthYear = (century === '2' ? '19' : '20') + year;
+      const birthDate = new Date(birthYear, month - 1, day);
+      
+      // Check if date is valid
+      if (
+        birthDate.getFullYear() !== parseInt(birthYear) ||
+        birthDate.getMonth() !== parseInt(month) - 1 ||
+        birthDate.getDate() !== parseInt(day) ||
+        parseInt(month) > 12 ||
+        parseInt(day) > 31
+      ) {
+        setssnError("Invalid birth date in ID number.");
+        isValid = false;
+      }
     }
 
     if (!phone) {
@@ -181,7 +221,6 @@ export const ProfilePage = ({ navigation }) => {
 
     try {
       let updateData = {
-       
         ssn,
         phone,
         location: `${street}, ${city}`,
@@ -220,15 +259,6 @@ export const ProfilePage = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <IconButton
-          icon="arrow-left"
-          size={30}
-          iconColor="white"
-          style={{ position: "absolute", left: 10, top: 10, zIndex: 1 }}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        />
         <Text style={styles.headerText}>
           {isLoadingUser 
             ? "Loading..." 
@@ -263,8 +293,6 @@ export const ProfilePage = ({ navigation }) => {
           </View>
 
           <View style={styles.content}>
-           
-            
             <MyTextInput
               label="ID Number"
               value={ssn}
@@ -291,15 +319,29 @@ export const ProfilePage = ({ navigation }) => {
               <Text style={styles.errorText}>{phoneError}</Text>
             )}
 
-            <MyTextInput
-              label="City"
-              value={city}
-              onChangeText={(text) => {
-                setCity(text);
-                setCityError(""); // Clear error on input change
-              }}
-            />
-            {cityError !== "" && <Text style={styles.errorText}>{cityError}</Text>}
+            <View style={styles.dropDownContainer}>
+              <DropDownPicker
+                open={open}
+                value={city}
+                items={items}
+                setOpen={setOpen}
+                setValue={setCity}
+                setItems={setItems}
+                placeholder="Select a city"
+                style={styles.dropDownStyle}
+                textStyle={styles.dropDownTextStyle}
+                dropDownContainerStyle={styles.dropDownContainerStyle}
+                placeholderStyle={styles.placeholderStyle}
+                listItemContainerStyle={styles.listItemContainerStyle}
+                selectedItemContainerStyle={styles.selectedItemContainerStyle}
+                selectedItemLabelStyle={styles.selectedItemLabelStyle}
+                onChangeValue={(value) => {
+                  setCity(value);
+                  setCityError("");
+                }}
+              />
+              {cityError !== "" && <Text style={styles.errorText}>{cityError}</Text>}
+            </View>
 
             <MyTextInput
               label="Street"
@@ -368,17 +410,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 17,
   },
+  dropDownContainer: {
+    marginHorizontal: 9,
+    marginVertical: 4,
+    zIndex: 2000,
+  },
+  dropDownStyle: {
+    backgroundColor: 'white',
+    borderColor: '#01b3bd',
+    borderRadius: 20,
+    borderWidth: 1,
+    minHeight: 50,
+  },
+  dropDownContainerStyle: {
+    backgroundColor: 'white',
+    borderColor: '#01b3bd',
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  dropDownTextStyle: {
+    fontSize: 16,
+    color: '#000',
+  },
+  placeholderStyle: {
+    color: '#666',
+    fontSize: 16,
+  },
+  listItemContainerStyle: {
+    height: 40,
+  },
+  selectedItemContainerStyle: {
+    backgroundColor: '#e6f7f8',
+  },
+  selectedItemLabelStyle: {
+    color: '#01b3bd',
+    fontWeight: 'bold',
+  },
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
