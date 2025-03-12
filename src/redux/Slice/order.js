@@ -1,4 +1,5 @@
-import{coreApi} from './coreApi'
+import { coreApi } from './coreApi'
+
 
 export  const orders = coreApi.injectEndpoints({
     endpoints: (build) => ({
@@ -44,11 +45,15 @@ export  const orders = coreApi.injectEndpoints({
         invalidatesTags: ["Orders"], // Invalidate cache to refetch updated data
     }),
 
-    getAllOrders: build.query({  
-        query: () => 'orders',  
-        providesTags: ['Orders']
-    }),
-    
+
+    getAllOrders:build.query({  //for doctor view in requestsReview
+        query:({
+        url:'orders',
+        method:'GET'
+        }),
+
+    providesTags:['Orders']
+}),
 })
 })
 export const {useAddOrderMutation,
@@ -56,3 +61,4 @@ export const {useAddOrderMutation,
                 useDeleteOrderMutation,
                 useGetAllOrdersQuery,
                  useUpdateOrderMutation}=orders
+

@@ -4,5 +4,6 @@ export const Colors = {
     secondaryColor: "#2837387e",
     baseColor: "#eef",
     mutedColor: "#cccac9",
+    
 
 }
