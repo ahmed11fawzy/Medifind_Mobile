@@ -69,7 +69,7 @@ export default function Login({ navigation }) {
                         
                         Alert.alert('Success', 'Login successful');
 
-                        navigation.navigate('ProfilePage');
+                        navigation.navigate('Home');
 
                     } else {
                         console.error('No token found in response');

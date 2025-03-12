@@ -26,4 +26,3 @@ export const coreApi = createApi({
     tagTypes: ['Medicine', 'User', 'Request', 'Orders' , 'review'],
     endpoints: () => ({})
 })
-console.log('Core API:', coreApi);
