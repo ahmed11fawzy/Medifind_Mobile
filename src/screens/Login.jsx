@@ -71,7 +71,7 @@ export default function Login({ navigation }) {
                         
                         Alert.alert('Success', 'Login successful');
 
-                        navigation.navigate('Home');
+                        navigation.navigate('MainApp', { screen: 'Home' });
 
                     } else {
                         console.error('No token found in response');

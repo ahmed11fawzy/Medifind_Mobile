@@ -8,9 +8,10 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  FlatList,
+  Modal,
 } from "react-native";
 import { Avatar, IconButton, TextInput } from "react-native-paper";
-import DropDownPicker from "react-native-dropdown-picker";
 import * as ImagePicker from "expo-image-picker";
 import { MyTextInput } from "../components/MyTextInput";
 import { MyButton } from "../components/MyButton";
@@ -29,6 +30,20 @@ const egyptianCities = [
   { label: "Sharm El Sheikh", value: "Sharm El Sheikh" },
   { label: "Luxor", value: "Luxor" },
   { label: "Aswan", value: "Aswan" },
+  { label: "Mansoura", value: "Mansoura" },
+  { label: "Tanta", value: "Tanta" },
+  { label: "Suez", value: "Suez" },
+  { label: "Asyut", value: "Asyut" },
+  { label: "Beni Suef", value: "Beni Suef" },
+  { label: "Port Said", value: "Port Said" },
+  { label: "Damietta", value: "Damietta" },
+  { label: "Zagazig", value: "Zagazig" },
+  { label: "Ismailia", value: "Ismailia" },
+  { label: "Kafr El-Sheikh", value: "Kafr El-Sheikh" },
+  { label: "Minya", value: "Minya" },
+  { label: "Hurghada", value: "Hurghada" },
+  { label: "Damanhour", value: "Damanhour" },
+  { label: "Sohag", value: "Sohag" }
 ];
 
 export const ProfilePage = ({ navigation }) => {
@@ -320,28 +335,62 @@ export const ProfilePage = ({ navigation }) => {
             )}
 
             <View style={styles.dropDownContainer}>
-              <DropDownPicker
-                open={open}
-                value={city}
-                items={items}
-                setOpen={setOpen}
-                setValue={setCity}
-                setItems={setItems}
-                placeholder="Select a city"
-                style={styles.dropDownStyle}
-                textStyle={styles.dropDownTextStyle}
-                dropDownContainerStyle={styles.dropDownContainerStyle}
-                placeholderStyle={styles.placeholderStyle}
-                listItemContainerStyle={styles.listItemContainerStyle}
-                selectedItemContainerStyle={styles.selectedItemContainerStyle}
-                selectedItemLabelStyle={styles.selectedItemLabelStyle}
-                onChangeValue={(value) => {
-                  setCity(value);
-                  setCityError("");
-                }}
-              />
+              <TouchableOpacity 
+                style={styles.dropDownButton}
+                onPress={() => setOpen(!open)}
+              >
+                <Text style={[styles.dropDownButtonText, !city && styles.placeholderText]}>
+                  {city || "Select a city"}
+                </Text>
+                <IconButton
+                  icon={open ? "chevron-up" : "chevron-down"}
+                  size={24}
+                  color="#01b3bd"
+                />
+              </TouchableOpacity>
               {cityError !== "" && <Text style={styles.errorText}>{cityError}</Text>}
             </View>
+
+            <Modal
+              visible={open}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setOpen(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setOpen(false)}
+              >
+                <View style={styles.modalContent}>
+                  <FlatList
+                    data={egyptianCities}
+                    keyExtractor={(item) => item.value}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.cityItem,
+                          city === item.value && styles.selectedCityItem
+                        ]}
+                        onPress={() => {
+                          setCity(item.value);
+                          setCityError("");
+                          setOpen(false);
+                        }}
+                      >
+                        <Text style={[
+                          styles.cityItemText,
+                          city === item.value && styles.selectedCityItemText
+                        ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    showsVerticalScrollIndicator={false}
+                  />
+                </View>
+              </TouchableOpacity>
+            </Modal>
 
             <MyTextInput
               label="Street"
@@ -413,36 +462,52 @@ const styles = StyleSheet.create({
   dropDownContainer: {
     marginHorizontal: 9,
     marginVertical: 4,
-    zIndex: 2000,
   },
-  dropDownStyle: {
+  dropDownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: 'white',
     borderColor: '#01b3bd',
     borderRadius: 20,
     borderWidth: 1,
+    paddingHorizontal: 15,
     minHeight: 50,
   },
-  dropDownContainerStyle: {
-    backgroundColor: 'white',
-    borderColor: '#01b3bd',
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  dropDownTextStyle: {
+  dropDownButtonText: {
     fontSize: 16,
     color: '#000',
   },
-  placeholderStyle: {
+  placeholderText: {
     color: '#666',
-    fontSize: 16,
   },
-  listItemContainerStyle: {
-    height: 40,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  selectedItemContainerStyle: {
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    width: '80%',
+    maxHeight: '60%',
+    padding: 20,
+  },
+  cityItem: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  selectedCityItem: {
     backgroundColor: '#e6f7f8',
   },
-  selectedItemLabelStyle: {
+  cityItemText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  selectedCityItemText: {
     color: '#01b3bd',
     fontWeight: 'bold',
   },
