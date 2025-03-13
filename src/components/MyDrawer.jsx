@@ -71,49 +71,49 @@ export const DrawerContent = (props) => {
         <DrawerItem
           icon="home-outline"
           label="Home"
-          onPress={() => props.navigation.navigate("Home")}
+          onPress={() => props.navigation.navigate("Main", { screen: "Home" })}
           isActive={currentRoute === "Home"}
         />
         <DrawerItem
           icon="person-outline"
           label="Profile"
-          onPress={() => props.navigation.navigate("ProfilePage")}
+          onPress={() => props.navigation.navigate("Main", { screen: "ProfilePage" })}
           isActive={currentRoute === "ProfilePage"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Add Medicine"
-          onPress={() => props.navigation.navigate("AddMedicine")}
+          onPress={() => props.navigation.navigate("Main", { screen: "AddMedicine" })}
           isActive={currentRoute === "AddMedicine"}
         />
         <DrawerItem
           icon="cash-outline"
           label="Donations"
-          onPress={() => props.navigation.navigate("Donations")}
+          onPress={() => props.navigation.navigate("Main", { screen: "Donations" })}
           isActive={currentRoute === "Donations"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Request Medicine"
-          onPress={() => props.navigation.navigate("RequestMedicine")}
+          onPress={() => props.navigation.navigate("Main", { screen: "RequestMedicine" })}
           isActive={currentRoute === "RequestMedicine"}
         />
         <DrawerItem
           icon="help-circle-outline"
           label="Needs"
-          onPress={() => props.navigation.navigate("Needs")}
+          onPress={() => props.navigation.navigate("Main", { screen: "Needs" })}
           isActive={currentRoute === "Needs"}
         />
         <DrawerItem
           icon="document-text-outline"
           label="Requests Review"
-          onPress={() => props.navigation.navigate("RequestsReview")}
+          onPress={() => props.navigation.navigate("Main", { screen: "RequestsReview" })}
           isActive={currentRoute === "RequestsReview"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Offers Review"
-          onPress={() => props.navigation.navigate("OffersReview")}
+          onPress={() => props.navigation.navigate("Main", { screen: "OffersReview" })}
           isActive={currentRoute === "OffersReview"}
         />
         <DrawerItem

@@ -52,6 +52,7 @@ export const orders = coreApi.injectEndpoints({
             }),
             invalidatesTags: ['Orders'],
         }),
+
     
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
@@ -74,6 +75,7 @@ export const orders = coreApi.injectEndpoints({
             },
           }),
           
+
         getAllOrders: build.query({  //for doctor view in requestsReview
             query: () => ({
                 url: 'orders',
@@ -88,7 +90,6 @@ export const orders = coreApi.injectEndpoints({
         }),
     })
 });
-
 
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
 

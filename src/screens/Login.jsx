@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
+import { StyleSheet, Text, Image, TouchableOpacity, View, Alert } from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TextInput } from 'react-native-paper';
 import { useUserLoginMutation } from '../redux/Slice/user'
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../redux/Slice/authSlice';
 import { decodeToken } from '../utils/tokenUtils';
-
+import { Entypo } from '@expo/vector-icons';
+import { Divider } from 'react-native-elements';
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -99,8 +101,22 @@ export default function Login({ navigation }) {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+        <View style={[styles.container, { marginTop: 30 }]}>
+            <View style={{ flexDirection: 'row', paddingBottom: 0 }} >
+                <Text style={{ fontSize: 25, fontWeight: 'bold' }}>Login</Text>
+                <Entypo name='user' size={18} style={{ marginInlineStart: "10", marginTop: "10" }} />
+            </View>
+            <Text style={{ color: '#b1afa9' }} >Welcome back </Text>
+            <Image
+                source={require('../../assets/doctor.jpeg')}
+                style={{
+                    width: "100%",
+                    height: 300,
+                    marginBottom: 20,
+
+                }}
+            >
+            </Image>
 
             <TextInput
                 mode="outlined"
@@ -131,6 +147,18 @@ export default function Login({ navigation }) {
             >
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
+            <View style={{ marginTop: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }} >
+                <Divider
+                    color="#b1afa9"
+                    style={{ width: 100 }}
+                />
+                <Text style={{ color: '#b1afa9', paddingHorizontal: 10 }}> Or </Text>
+                <Divider
+                    color="#b1afa9"
+                    style={{ width: 100 }}
+                />
+            </View>
+            <Text style={{ color: '#b1afa9', marginVertical: 20, textAlign: 'center' }} >Don't have an account? <Text style={{ color: '#00b2bc' }} onPress={() => navigation.navigate('RegisterPage')}>Sign up</Text></Text>
         </View>
     )
 }
@@ -139,8 +167,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
+
         padding: 20,
     },
     title: {
@@ -151,6 +178,9 @@ const styles = StyleSheet.create({
     input: {
         width: '100%',
         marginBottom: 10,
+        backgroundColor: '#f5f5f5',
+        borderStyle: 'solid',
+        borderWidth: 0,
     },
     errorText: {
         color: 'red',
@@ -159,7 +189,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     button: {
-        backgroundColor: '#00b2bc',
+        backgroundColor: 'rgba(0, 179, 188, 0.55)',
         width: '100%',
         padding: 15,
         borderRadius: 5,
