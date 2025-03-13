@@ -9,6 +9,7 @@ import { useRoute } from "@react-navigation/native";
 import { useAuth } from "../hooks/useAuth"
 import { MyButton } from "../components/MyButton";
 import {MyTextInput} from "../components/MyTextInput"
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export const Update = () => {
   const navigation = useNavigation();
@@ -51,7 +52,7 @@ export const Update = () => {
         prescription_img: imageUri,
       };
       await updateOrder({ id: orderId, body: updatedOrder }).unwrap();
-      navigation.goBack();  // الرجوع بعد التحديث لصفحة Needs
+      navigation.navigate("Needs");
     } catch (error) {
       console.error("Error updating order:", error);
     }
@@ -244,17 +245,15 @@ export const Update = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-        {uploading ? (
-          <ActivityIndicator size="large" color="#007bff" />
-        ) : imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.avatar} />
-        ) : (
-          <View style={styles.plusContainer}>
-            <Text style={styles.plusText}>+</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+     <Icon name="hand-holding-medical" size={40} color="#01b3bd" style={{marginBottom: 60,marginTop: -30}} />
+    <View style={styles.imagePickerContainer}>
+  <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+    <Icon name="camera" size={20} color="#01b3bd" style={styles.cameraIcon } />
+    <Button mode="text" color="#01b3bd">
+      {imageUri ?imageUri.split('/').pop() : "Upload Medicine Image"}
+    </Button>
+  </TouchableOpacity>
+</View>
       <MyTextInput
         label="Medicine Name"
         value={medicineName}
@@ -290,39 +289,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  avatarContainer: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-    position: "relative",
-    padding:1,
-    borderWidth: 2,  
-    borderColor: "#ccc", 
-  },
-  avatar: {
-    width: "92%",
-    height: "92%",
-    borderRadius: 50,
-    resizeMode: "cover",
-  },
-  plusContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  plusText: {
-    fontSize: 50,
-    color: "#888",
-    fontWeight: "bold",
-    position: "absolute",
-    top: -12,
-  },
   input: {
     width: "100%",
     marginBottom: 10,
@@ -344,4 +310,34 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
+   imagePickerContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  imagePicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFBFE",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#32323390",
+    padding: 5,
+    width: "100%",
+    height: 55,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginVertical: 10,
+    resizeMode: "cover",
+  },
+  cameraIcon: {
+    backgroundColor: "#FFFBFE",
+    padding: 3,
+    borderRadius: 50,
+  },
+  
 });
