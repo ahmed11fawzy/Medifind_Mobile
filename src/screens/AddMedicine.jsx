@@ -1,26 +1,18 @@
 import Icon from "react-native-vector-icons/FontAwesome5";
-import React, { useState } from "react";
-import { View,Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
-import {
-  TextInput,
-  Button,
-  HelperText,
-  PaperProvider,
-} from "react-native-paper";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import {
-  useAddMedicineMutation,
-  useUpdateMedicineMutation,
-} from "../redux/Slice/medicine";
+import { useAddMedicineMutation, useUpdateMedicineMutation } from "../redux/Slice/medicine";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import {Colors} from '../constants/RootColor' 
+import { Colors } from "../constants/RootColor";
 
 const theme = {
   colors: {
-    primary:  Colors.mainColor,
+    primary: Colors.mainColor,
     onSurfaceVariant: Colors.mainColor,
     background: "#ffffff",
     text: "#333",
@@ -29,32 +21,52 @@ const theme = {
 };
 
 export const AddMedicine = () => {
-  // States
-  const [name, setName] = useState("");
-  // Change this line - initialize with a Date object instead of empty string
-  const [date, setDate] = useState(new Date());
-  const [formattedDate, setFormattedDate] = useState("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [concentration, setConcentration] = useState("");
-  const [img, setImg] = useState("");
-  const [isUploading, setUploading] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  // Hooks (Always at the top)
-  const [addMedicine, { isLoading, isError }] = useAddMedicineMutation();
-  const [updateMedicine] = useUpdateMedicineMutation();
-  const auth = useAuth();
-  const navigation = useNavigation();
   const route = useRoute();
+  const navigation = useNavigation();
+  const auth = useAuth();
 
-  const isAuthenticated = auth.isAuthenticated;
-  const userId = auth.userId;
+  const [addMedicine, { isLoading }] = useAddMedicineMutation();
+  const [updateMedicine] = useUpdateMedicineMutation();
 
+  // Extract medicine data if updating
   const med_id = route.params?.med_id || null;
+  const [name, setName] = useState(route.params?.name || "");
+  const [concentration, setConcentration] = useState(route.params?.concentration || "");
+  const [formattedDate, setFormattedDate] = useState(route.params?.expire_date || "");
+  const [img, setImg] = useState(route.params?.image_path || "");
+  const [date, setDate] = useState(formattedDate ? new Date(formattedDate) : new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isUploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (med_id) {
+      setName(route.params?.name || "");
+      setConcentration(route.params?.concentration || "");
+      setFormattedDate(route.params?.expire_date || "");
+      setImg(route.params?.image_path || "");
+    }
+  }, [med_id]);
+
+  const validateInputs = () => {
+    let newErrors = {};
+    if (!name.trim()) newErrors.name = "Medicine name is required.";
+    if (!formattedDate.trim()) newErrors.date = "Expire date is required.";
+    if (!concentration.trim()) newErrors.concentration = "Concentration is required.";
+    if (!img) newErrors.img = "Medicine image is required.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      setFormattedDate(selectedDate.toISOString().split("T")[0]);
+    }
+  };
 
   const handleImagePick = async () => {
-    console.log("Image picker clicked!");
-
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -83,29 +95,9 @@ export const AddMedicine = () => {
         setImg(response.data.secure_url);
       }
     } catch (error) {
-      console.error("Image Picker Error:", error);
       Alert.alert("Error", "Something went wrong while picking the image.");
     } finally {
       setUploading(false);
-    }
-  };
-
-  const validateInputs = () => {
-    let newErrors = {};
-    if (!name.trim()) newErrors.name = "Medicine name is required.";
-    if (!date.trim()) newErrors.date = "Expire date is required.";
-    if (!concentration.trim())
-      newErrors.concentration = "Concentration is required.";
-    if (!img) newErrors.img = "Medicine image is required.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-      setFormattedDate(selectedDate.toISOString().split("T")[0]);
     }
   };
 
@@ -115,10 +107,10 @@ export const AddMedicine = () => {
     try {
       const requestData = {
         name,
-        expire_date: formattedDate, // Use formattedDate here
+        expire_date: formattedDate,
         concentration,
         image_path: img,
-        user_id: userId,
+        user_id: auth.userId,
       };
 
       if (med_id) {
@@ -129,15 +121,13 @@ export const AddMedicine = () => {
         Alert.alert("Success", "Medicine added successfully!");
       }
 
-      // Reset the form
       setName("");
-      setDate("");
+      setFormattedDate("");
       setConcentration("");
       setImg("");
       setErrors({});
       navigation.navigate("Donations");
     } catch (error) {
-      console.error("API Error:", error);
       Alert.alert("Error", "Failed to process the medicine.");
     }
   };
@@ -145,8 +135,8 @@ export const AddMedicine = () => {
   return (
     <PaperProvider theme={theme}>
       <View style={styles.container}>
-        <View><Text style={styles.title}>Add Medicine</Text></View>
-        {/* Donation Icon */}
+        <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
+
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
         </View>
@@ -164,27 +154,19 @@ export const AddMedicine = () => {
 
         {/* Expire Date Input */}
         <TextInput
-          label="Expire Date "
-          value={formattedDate} // Use formattedDate here
+          label="Expire Date"
+          value={formattedDate}
           onFocus={() => setShowDatePicker(true)}
           mode="outlined"
           style={styles.input}
           outlineColor={Colors.mainColor}
-
-          right={
-            <TextInput.Icon
-              icon="calendar"
-              color={Colors.mainColor}
-              onPress={() => setShowDatePicker(true)}
-            />
-          }
+          right={<TextInput.Icon icon="calendar" color={Colors.mainColor} onPress={() => setShowDatePicker(true)} />}
         />
         {errors.date && <HelperText type="error">{errors.date}</HelperText>}
 
         {showDatePicker && (
           <DateTimePicker
-            testID="dateTimePicker"
-            value={date} // This should be a Date object
+            value={date}
             mode="date"
             display="calendar"
             minimumDate={new Date()}
@@ -199,61 +181,30 @@ export const AddMedicine = () => {
           onChangeText={setConcentration}
           mode="outlined"
           outlineColor={Colors.mainColor}
-
           style={styles.input}
         />
-        {errors.concentration && (
-          <HelperText type="error">{errors.concentration}</HelperText>
-        )}
+        {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
         {/* Image Upload Section */}
         <View style={styles.imagePickerContainer}>
-          <TouchableOpacity
-            onPress={handleImagePick}
-            style={styles.imagePicker}
-          >
-            <Icon
-              name="camera"
-              size={20}
-              color={Colors.mainColor}
-              style={{ marginRight: 10 }}
-            />
-            <Button mode="text" color="#43a694">
-              {img ? "Change Image" : "Upload Image"}
-            </Button>
+          <TouchableOpacity onPress={handleImagePick} style={styles.imagePicker}>
+            <Icon name="camera" size={20} color={Colors.mainColor} style={{ marginRight: 10 }} />
+            <Button mode="text" color="#43a694">{img ? "Change Image" : "Upload Image"}</Button>
           </TouchableOpacity>
-
-          {/* Show Image Preview if Selected */}
-          {img ? (
-            <Image source={{ uri: img }} style={styles.imagePreview} />
-          ) : null}
+          {img && <Image source={{ uri: img }} style={styles.imagePreview} />}
         </View>
-
         {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
         {/* Submit Button */}
-        <Button
-          style={styles.button}
-          mode="contained"
-          loading={isLoading || isUploading}
-          disabled={isLoading || isUploading}
-          textColor="white"
-          onPress={handleSubmit}
-        >
-          {isLoading || isUploading
-            ? "Processing..."
-            : med_id
-            ? "Update Medicine"
-            : "Add Medicine"}
+        <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
+          {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
         </Button>
-
-        {isError && (
-          <HelperText type="error">Failed to process medicine</HelperText>
-        )}
       </View>
     </PaperProvider>
   );
 };
+
+
 
 
 
@@ -286,6 +237,7 @@ const styles = StyleSheet.create({
     width: "60%",
     borderRadius: 12,
     alignSelf: "center",
+    fontSize: 66, 
     paddingVertical: 10,
   },
 
