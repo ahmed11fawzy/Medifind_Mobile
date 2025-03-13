@@ -6,6 +6,8 @@ import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import { useAddOrderMutation, useGetOrderQuery } from "../redux/Slice/order";
 import { useAuth } from "../hooks/useAuth"
+import { MyButton } from "../components/MyButton";
+import {MyTextInput} from "../components/MyTextInput"
 
 export const RequestMedicine = () => {
   const navigation = useNavigation();
@@ -234,7 +236,7 @@ export const RequestMedicine = () => {
           </View>
         )}
       </TouchableOpacity>
-      <TextInput
+      <MyTextInput
         label="Medicine Name"
         value={medicineName}
         onChangeText={setMedicineName}
@@ -244,21 +246,18 @@ export const RequestMedicine = () => {
         error={errors.medicineName}
       />
       {errors.medicineName && <Text style={styles.errorText}>Medicine name is required.</Text>}
-      <TextInput
+      <MyTextInput
         label="Description"
         value={description}
         onChangeText={setDescription}
         mode="outlined"
         multiline
         numberOfLines={4}
-        style={[styles.input, styles.customInput, styles.descriptionInput]}
         theme={{ colors: { primary: errors.description ? "red" : "#888" } }}
         error={errors.description}
       />
       {errors.description && <Text style={styles.errorText}>Description is required.</Text>}
-      <Button mode="contained" onPress={validateForm} style={styles.button} disabled={isLoading || uploading}> 
-         {isLoading ? "Submitting..." : "Add Request"}
-      </Button>
+      <MyButton title="Add Request" onPress={validateForm}/>
     </View>
   );
 };
@@ -275,16 +274,20 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
     position: "relative",
+    padding:1,
+    borderWidth: 2,  
+    borderColor: "#ccc", 
   },
   avatar: {
-    width: 100,
-    height: 100,
+    width: "92%",
+    height: "92%",
     borderRadius: 50,
+    resizeMode: "cover",
   },
   plusContainer: {
     width: 50,

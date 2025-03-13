@@ -31,7 +31,6 @@ const RequestsReview = lazy(() => import('./RequestsReview').then(module => ({ d
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-
 const MainScreen = () => {
   return (
     <PaperProvider>
@@ -188,6 +187,7 @@ const MainScreen = () => {
             )}
           </Drawer.Screen>
         </Drawer.Navigator>
+
       </NavigationContainer>
     </PaperProvider>
   );
