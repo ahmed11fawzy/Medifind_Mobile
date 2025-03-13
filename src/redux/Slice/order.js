@@ -41,54 +41,39 @@ export const orders = coreApi.injectEndpoints({
 
         updateOrder: build.mutation({
 
-            query: ({ id, body }) => {
-                console.log('Updating order:', id, 'with data:', body);
-                return {
-                    url: `orders/${id}`,
-                    method: 'PATCH',
-                    body,
-                    responseHandler: 'text',
-                };
-            },
-            transformResponse: (response, meta) => {
-                try {
-                    console.log('Update order response:', response.substring(0, 100));
-                    return {
-                        data: JSON.parse(response),
-                        headers: meta.response.headers
-                    };
-                } catch (error) {
-                    console.error('Error parsing update order response:', error);
-                    throw new Error('Failed to parse server response');
-                }
-            },
-            invalidatesTags: ['Orders']
-
+            query: ({ id, body }) => ({
+                url: `orders/${id}`,
+                method: 'PATCH',
+                body,
+                responseHandler: 'text',
+            }),
+            transformResponse: (response) => ({
+                data: JSON.parse(response),
+            }),
+            invalidatesTags: ['Orders'],
         }),
-        
+
+    
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
-              url: 'orders/', // نفس الـ endpoint في الـ backend
+              url: 'orders/', 
               method: "DELETE",
-              headers: {       // إرسال الـ req_id و user_id عبر الـ headers
+              headers: {   
                 "Content-Type": "application/json",
-                "req_id": req_id,    // ارسال الـ req_id
-                "user_id": user_id,  // ارسال الـ user_id
+                "req_id": req_id,    
+                "user_id": user_id,  
                 },
             }),
             async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {
               try {
                 await queryFulfilled;
                 console.log("✅ Order deleted successfully:", req_id);
-                dispatch(coreApi.util.invalidateTags(["Orders"])); // تحديث البيانات بعد الحذف
+                dispatch(coreApi.util.invalidateTags(["Orders"])); 
               } catch (error) {
                 console.error("❌ Error deleting order:", error);
               }
             },
           }),
-          
-                    
-          
           
 
         getAllOrders: build.query({  //for doctor view in requestsReview
@@ -104,8 +89,7 @@ export const orders = coreApi.injectEndpoints({
 
         }),
     })
-})
-
+});
 
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
 

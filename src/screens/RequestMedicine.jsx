@@ -1,11 +1,14 @@
 import React, { useLayoutEffect, useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Image, Text, ActivityIndicator, Platform } from "react-native";
 import { TextInput, Button } from "react-native-paper";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import { useAddOrderMutation, useGetOrderQuery } from "../redux/Slice/order";
 import { useAuth } from "../hooks/useAuth"
+import { MyButton } from "../components/MyButton";
+import {MyTextInput} from "../components/MyTextInput"
 
 export const RequestMedicine = () => {
   const navigation = useNavigation();
@@ -223,42 +226,38 @@ export const RequestMedicine = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-        {uploading ? (
-          <ActivityIndicator size="large" color="#007bff" />
-        ) : imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.avatar} />
-        ) : (
-          <View style={styles.plusContainer}>
-            <Text style={styles.plusText}>+</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-      <TextInput
+<Icon name="hand-holding-medical" size={40} color="#01b3bd" style={{marginBottom: 60,marginTop: -30}} />
+    <View style={styles.imagePickerContainer}>
+  <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+    <Icon name="camera" size={20} color="#01b3bd" style={styles.cameraIcon } />
+    <Button mode="text" color="#01b3bd">
+      {imageUri ?imageUri.split('/').pop() : "Upload Medicine Image"}
+    </Button>
+  </TouchableOpacity>
+</View>
+
+      <MyTextInput
         label="Medicine Name"
         value={medicineName}
         onChangeText={setMedicineName}
         mode="outlined"
         style={[styles.input, styles.customInput]}
-        theme={{ colors: { primary: errors.medicineName ? "red" : "#888" } }}
+        theme={{ colors: { primary: errors.medicineName ? "red" : "#888" }}}
         error={errors.medicineName}
       />
       {errors.medicineName && <Text style={styles.errorText}>Medicine name is required.</Text>}
-      <TextInput
+      <MyTextInput
         label="Description"
         value={description}
         onChangeText={setDescription}
         mode="outlined"
         multiline
         numberOfLines={4}
-        style={[styles.input, styles.customInput, styles.descriptionInput]}
         theme={{ colors: { primary: errors.description ? "red" : "#888" } }}
         error={errors.description}
       />
       {errors.description && <Text style={styles.errorText}>Description is required.</Text>}
-      <Button mode="contained" onPress={validateForm} style={styles.button} disabled={isLoading || uploading}> 
-         {isLoading ? "Submitting..." : "Add Request"}
-      </Button>
+      <MyButton title="Add Request" onPress={validateForm}/>
     </View>
   );
 };
@@ -270,35 +269,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#fff",
-  },
-  avatarContainer: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-    position: "relative",
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  plusContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  plusText: {
-    fontSize: 50,
-    color: "#888",
-    fontWeight: "bold",
-    position: "absolute",
-    top: -12,
   },
   input: {
     width: "100%",
@@ -321,4 +291,34 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
+  imagePickerContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  imagePicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFBFE",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#32323390",
+    padding: 5,
+    width: "100%",
+    height: 55,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginVertical: 10,
+    resizeMode: "cover",
+  },
+  cameraIcon: {
+    backgroundColor: "#FFFBFE",
+    padding: 3,
+    borderRadius: 50,
+  },
+  
 });
