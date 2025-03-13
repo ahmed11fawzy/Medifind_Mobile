@@ -43,7 +43,7 @@ export const useAuth = () => {
 
         // Add expiration check
         isTokenValid: token && tokenData && tokenData.exp * 1000 > Date.now(),
-        logout: handleLogout
+        logout: handleLogout,
 
         // Role-based helper methods
         isUser: hasRole(ROLES.USER),
