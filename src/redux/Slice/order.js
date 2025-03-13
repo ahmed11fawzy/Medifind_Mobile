@@ -87,7 +87,6 @@ export const orders = coreApi.injectEndpoints({
     })
 })
 
-
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
 
 
