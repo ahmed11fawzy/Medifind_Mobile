@@ -22,7 +22,9 @@ const theme = {
 export const AddMedicine = () => {
   // States
   const [name, setName] = useState("");
-  const [date, setDate] = useState("");
+  // Change this line - initialize with a Date object instead of empty string
+  const [date, setDate] = useState(new Date());
+  const [formattedDate, setFormattedDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [concentration, setConcentration] = useState("");
   const [img, setImg] = useState("");
@@ -93,7 +95,8 @@ export const AddMedicine = () => {
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      setDate(selectedDate.toISOString().split("T")[0]);
+      setDate(selectedDate);
+      setFormattedDate(selectedDate.toISOString().split("T")[0]);
     }
   };
 
@@ -103,7 +106,7 @@ export const AddMedicine = () => {
     try {
       const requestData = {
         name,
-        expire_date: date,
+        expire_date: formattedDate, // Use formattedDate here
         concentration,
         image_path: img,
         user_id: userId,
@@ -153,7 +156,7 @@ export const AddMedicine = () => {
         {/* Expire Date Input */}
         <TextInput
           label="Expire Date "
-          value={date}
+          value={formattedDate} // Use formattedDate here
           onFocus={() => setShowDatePicker(true)}
           mode="outlined"
           style={styles.input}
@@ -163,7 +166,10 @@ export const AddMedicine = () => {
 
         {showDatePicker && (
           <DateTimePicker
-            value={date ? new Date(date) : new Date()}
+
+            testID="dateTimePicker"
+            value={date} // This should be a Date object
+
             mode="date"
             display="calendar"
             minimumDate={new Date()}

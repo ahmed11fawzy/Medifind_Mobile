@@ -41,29 +41,22 @@ export const orders = coreApi.injectEndpoints({
 
         updateOrder: build.mutation({
 
-            query: ({ id, body }) => {
-                console.log('Updating order:', id, 'with data:', body);
-                return {
-                    url: `orders/${id}`,
-                    method: 'PATCH',
-                    body,
-                    responseHandler: 'text',
-                };
-            },
-            transformResponse: (response, meta) => {
-                try {
-                    console.log('Update order response:', response.substring(0, 100));
-                    return {
-                        data: JSON.parse(response),
-                        headers: meta.response.headers
-                    };
-                } catch (error) {
-                    console.error('Error parsing update order response:', error);
-                    throw new Error('Failed to parse server response');
-                }
-            },
-            invalidatesTags: ['Orders']
-
+            query: ({ id, body }) => ({
+                url: `orders/${id}`,
+                method: 'PATCH',
+                body,
+                responseHandler: 'text',
+            }),
+            transformResponse: (response) => ({
+                data: JSON.parse(response),
+            }),
+            invalidatesTags: ['Orders'],
+        }),
+    deleteOrder: build.mutation({
+        query: (id) => ({
+            url: `orders/${id}`,
+            method: "DELETE",
+            responseHandler: "text",
         }),
         
         deleteOrder: build.mutation({

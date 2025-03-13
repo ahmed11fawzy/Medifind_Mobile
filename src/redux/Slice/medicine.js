@@ -7,6 +7,14 @@ export const medicine = coreApi.injectEndpoints({
                 url: 'medicine', 
                 method: 'GET',
             }),
+            transformResponse: (response) => {
+                console.log('GetAllMedicines Response:', response);
+                return response;
+            },
+            transformErrorResponse: (response) => {
+                console.error('GetAllMedicines Error:', response);
+                return response;
+            },
             providesTags: ['Medicine']
         }),
 
