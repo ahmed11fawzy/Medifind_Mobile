@@ -12,7 +12,7 @@ export default function Login({ navigation }) {
     const [errors, setErrors] = useState({})
     const [userLogin, { isLoading: isLoginLoading }] = useUserLoginMutation()
     const dispatch = useDispatch();
-    
+
     const validateForm = () => {
         let newErrors = {}
 
@@ -40,16 +40,14 @@ export default function Login({ navigation }) {
     const handleSubmit = async () => {
         if (validateForm()) {
             try {
-                console.log('Sending login request...');
-                console.log(email, password);
-                
+
+
                 const response = await userLogin({
                     email: email.trim(),
                     password: password
                 }).unwrap();
 
-                console.log('Server response:', response);
-                console.log('Response headers:', response.headers);
+
 
                 if (response?.data) {
 
@@ -59,16 +57,18 @@ export default function Login({ navigation }) {
                     if (token) {
                         // Decode token to get user data
                         const decodedToken = decodeToken(token);
-                        console.log('Decoded token:', decodedToken);
-                        
+
+
                         // Save token and decoded data to Redux store
-                        dispatch(setCredentials({ 
-                            token, 
-                            user: decodedToken || response.data 
+                        dispatch(setCredentials({
+                            token,
+                            user: decodedToken || response.data
                         }));
-                        
+
                         Alert.alert('Success', 'Login successful');
+
                         navigation.navigate('ProfilePage');
+
                     } else {
                         console.error('No token found in response');
                         Alert.alert('Login Error', 'Authentication token not found');

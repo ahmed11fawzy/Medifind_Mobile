@@ -18,10 +18,11 @@ const authSlice = createSlice({
       state.token = token;
       state.user = user;
       state.isAuthenticated = !!token;
-      
+
       // Decode and store token data
       if (token) {
         state.tokenData = decodeToken(token);
+
       }
     },
     logout: (state) => {
@@ -39,7 +40,7 @@ const authSlice = createSlice({
         if (token) {
           state.token = token;
           state.isAuthenticated = true;
-          
+
           // Decode and store token data
           state.tokenData = decodeToken(token);
         }
