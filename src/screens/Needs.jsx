@@ -1,106 +1,130 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useGetOrderQuery, useDeleteOrderMutation, useUpdateOrderMutation } from "../redux/Slice/order";
+import {useAddRequestMutation} from "../redux/Slice/request";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { MyButton } from "../components/MyButton";
+import { useGetUserRequestsQuery } from "../redux/Slice/request";
+import { useDeleteRequestMutation } from "../redux/Slice/request"; 
+
 
 export const Needs = () => {
   const { userId } = useAuth();
-  console.log("User ID:", userId);
-  const { data: orders, error, isLoading, refetch } = useGetOrderQuery(userId);
+  const { data: orders, isLoading: isOrdersLoading, error: ordersError, refetch: refetchOrders} = useGetOrderQuery(userId);
+  const { data: requests, isLoading: isRequestsLoading, error: requestsError, refetch: refetchRequests } = useGetUserRequestsQuery(userId);
+  console.log("✅ Requests Data:", requests);
+
   const [deleteOrderMutation] = useDeleteOrderMutation();
   const [updateOrder] = useUpdateOrderMutation();
   const [userOrders, setUserOrders] = useState([]);
-  const navigation = useNavigation();  // للحصول على الدالة الخاصة بالتوجيه
-  console.log("User ID:", userId);
+  const navigation = useNavigation();
+  const route = useRoute(); 
+  const selectedMedicine = route.params?.selectedMedicine;
+  const [addRequestMutation] = useAddRequestMutation(); 
+  console.log("👤 Current User ID:", userId);
+  const [deleteRequestMutation] = useDeleteRequestMutation();
+
 
 
   useEffect(() => {
-    if (orders) {
-      console.log("Orders object:", orders);
-      console.log("Extracted orders array:", orders?.data);
-      setUserOrders(orders?.data || []);
+    console.log("📢 Fetching Data...");
+    console.log("📝 Orders Response:", orders);
+    console.log("📝 Requests Response:", requests);
+  
+    if (orders && Array.isArray(orders.data)) {
+      console.log("✅ Orders Data:", orders.data);
+    } else {
+      console.log("❌ Orders Data is invalid:", orders);
     }
-  }, [orders]);
+  
+    if (requests && Array.isArray(requests.data)) {
+      console.log("✅ Requests Data:", requests.data);
+    } else {
+      console.log("❌ Requests Data is invalid:", requests);
+    }
+  
+    // ✅ اجمع الطلبات مع الـ requests في نفس المصفوفة
+    setUserOrders([
+      ...(orders?.data || []), 
+      ...(requests?.data || [])
+    ]);
+  
+  }, [orders, requests]); // تحديث البيانات عند تغير الطلبات أو الـ requests
+  
+  useFocusEffect(
+    useCallback(() => {
+      refetchOrders();  
+      refetchRequests();
+    }, [refetchOrders, refetchRequests])
+  );
+  
+  if (isRequestsLoading || isOrdersLoading) {
+    return <ActivityIndicator size="large" color="#007bff" style={styles.loader} />;
+  }
+
+  if (requestsError || ordersError) {
+    return <Text style={styles.errorText}>Error loading requests</Text>;
+  }
+
+
+const handleCheckout = (item) => {
+  navigation.navigate("AddMedicine", { selectedRequest: item });
+};
 
   const handleUpdate = (orderId) => {
     navigation.navigate("Update", { orderId });
   };
-  
-  useEffect(() => {
-    if (orders) {
-      setUserOrders(orders?.data || []);
-    }
-  }, [orders]);
-  
-  useEffect(() => {
-    // لما نرجع من صفحة RequestMedicine، نعمل refetch أو invalidate للـ data
-    refetch();
-  }, [navigation]);
-  
-  
-  
+
   const handleDelete = async (orderId) => {
-    console.log(`🟡 Attempting to delete order ID: ${orderId}`);
-  
     try {
-      // إرسال الـ req_id و user_id عبر الـ headers
       const response = await deleteOrderMutation({
-        req_id: orderId,       // الـ req_id
-        user_id: userId        // الـ user_id
+        req_id: orderId,     
+        user_id: userId       
       }).unwrap();
-  
-      console.log("✅ Delete response:", response);
     } catch (error) {
       console.error("❌ Delete failed:", error);
     }
   };
 
-  
-  
-
-  if (isLoading) {
-    return <ActivityIndicator size="large" color="#007bff" style={styles.loader} />;
-  }
-
-  if (error) {
-    return <Text style={styles.errorText}>Error loading orders</Text>;
-  }
-
   return (
-    <View style={styles.container}>
-      {userOrders.length === 0 ? (
-        <Text style={styles.noOrdersText}>No orders found</Text>
-      ) : (
-        <FlatList
-          data={userOrders}
-          keyExtractor={(item) => item._id?.toString() || Math.random().toString()}
-          renderItem={({ item }) => (
-            <View style={styles.orderItem}>
-              <Image source={{ uri: item.prescription_img }} style={styles.orderImage} />
-              <View style={styles.textContainer}>
-                <Text style={styles.orderTitle}>{item.req_name}</Text>
-                <Text style={styles.orderDescription}>{item.req_description}</Text>
-
-                {/* أزرار التحديث والحذف */}
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.updateButton} onPress={() => handleUpdate(item._id)}>
-                    <Text style={styles.buttonText}>Update</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item._id)}>
-                    <Text style={styles.buttonText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
+   <FlatList
+  data={[...(userOrders || []), ...(requests?.data || [])]}
+  keyExtractor={(item) => item._id?.toString() || item.id?.toString() || Math.random().toString()}
+  renderItem={({ item }) => (
+    <View style={styles.orderItem}>
+      {item.prescription_img ? (
+      <Image source={{ uri: item.prescription_img }} style={styles.orderImage} />
+      ) : item.medicine?.image_path ? ( 
+      <Image source={{ uri: item.medicine.image_path }} style={styles.orderImage} />
+        ) : null}
+      <View style={styles.textContainer}>
+        <Text style={styles.orderTitle}>{item.req_name || item.medicine?.name}</Text>
+        <Text style={styles.orderDescription}>
+          {item.req_description || `Expire Date: ${item.medicine?.expire_date}`}
+        </Text>
+        <Text>Status: {item.status || "Pending"}</Text>
+        <View style={styles.buttonContainer}>
+          {item.prescription_img ? (
+            <>
+              <MyButton title="Update" onPress={() => handleUpdate(item._id)}/>
+              <MyButton title="Delete" onPress={() => handleDelete(item._id)}/>
+            </>
+          ) : (
+           <MyButton title="Checkout"onPress={() => handleCheckout(item)}/>
           )}
-        />
-      )}
+        </View>
+      </View>
     </View>
+  )}
+/>
+
+  
   );
 };
 
-// ✅✅✅ تصميم الأزرار والتنسيقات ✅✅✅
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -173,6 +197,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
+  selectedMedicineCard: {
+    backgroundColor: "#f9f9f9",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    },
+    
 });
 
 export default Needs;

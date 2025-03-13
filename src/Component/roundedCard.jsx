@@ -4,7 +4,37 @@ import { Colors } from '../constants/RootColor'
 import { StyleSheet } from "react-native";
 import { roundedCard } from "./roundedCardStyle";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from "@react-navigation/native";
+import { useAddRequestMutation } from "../redux/Slice/request"; 
+import { useAuth } from "../hooks/useAuth"; 
+import { useDispatch } from "react-redux";
+
 export const RoundedCard = ({ medicine }) => {
+    const navigation = useNavigation();
+    const { userId } = useAuth(); 
+    const dispatch = useDispatch();
+    const [addRequest] = useAddRequestMutation();
+
+    const handlePick = async () => {
+        console.log("🚀 Sending Data:", { 
+            user_id: userId, 
+            medicine: medicine?._id, // <-- هنا استخدم _id بدلًا من id
+            status: true 
+        });
+    
+        try {
+            const response = await addRequest({
+                user_id: userId,  
+                medicine: medicine?._id, // <-- هنا أيضًا
+                status: true,
+            }).unwrap(); 
+    
+            console.log("✅ Request Added Successfully:", response);
+            navigation.navigate("Needs");
+        } catch (error) {
+            console.error("❌ Error Adding Request:", error);
+        }
+    };
     return (
         <View style={roundedCard.post}>
             <View style={roundedCard.row} >
@@ -23,7 +53,7 @@ export const RoundedCard = ({ medicine }) => {
                 </View>
             </View>
            
-            <Button style={{ width: '30%', fontSize: '8', marginInlineStart: 'auto' }} mode="contained" buttonColor={Colors.mainColor} onPress={() => console.log('Pressed')}>
+            <Button style={{ width: '30%', fontSize: '8', marginInlineStart: 'auto' }} mode="contained" buttonColor={Colors.mainColor} onPress={handlePick}>
                 Pick
             </Button>
         </View>

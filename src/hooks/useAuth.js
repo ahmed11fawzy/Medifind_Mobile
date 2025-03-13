@@ -7,6 +7,12 @@ import {
     logout
 } from '../redux/Slice/authSlice';
 
+// Define role constants
+export const ROLES = {
+    USER: 'user',
+    DOCTOR: 'doctor'
+};
+
 export const useAuth = () => {
     const dispatch = useDispatch();
     const token = useSelector(selectToken);
@@ -14,7 +20,12 @@ export const useAuth = () => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const tokenData = useSelector(selectTokenData);
 
-    console.log("Auth Hook - Token Data:", tokenData);
+
+    // Check if token is valid (not expired)
+    const isTokenValid = token && tokenData && tokenData.exp * 1000 > Date.now();
+
+    // Helper functions for role-based checks
+    const hasRole = (role) => tokenData?.role === role;
 
     const handleLogout = () => {
         dispatch(logout());
@@ -28,9 +39,16 @@ export const useAuth = () => {
         // Add useful properties from token data
         userId: tokenData?.sub || tokenData?.id,
         userRole: tokenData?.role,
+        isTokenValid,
 
         // Add expiration check
         isTokenValid: token && tokenData && tokenData.exp * 1000 > Date.now(),
-        logout: handleLogout
+        logout: handleLogout,
+
+        // Role-based helper methods
+        isUser: hasRole(ROLES.USER),
+        isDoctor: hasRole(ROLES.DOCTOR),
+        hasRole
+
     };
 };
