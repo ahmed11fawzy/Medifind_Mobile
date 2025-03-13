@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Avatar, Button, Card } from 'react-native-paper';

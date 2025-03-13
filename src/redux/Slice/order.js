@@ -52,12 +52,7 @@ export const orders = coreApi.injectEndpoints({
             }),
             invalidatesTags: ['Orders'],
         }),
-    deleteOrder: build.mutation({
-        query: (id) => ({
-            url: `orders/${id}`,
-            method: "DELETE",
-            responseHandler: "text",
-        }),
+
         
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
@@ -98,7 +93,6 @@ export const orders = coreApi.injectEndpoints({
         }),
     })
 })
-
 
 export const { useAddOrderMutation, useGetOrderQuery, useDeleteOrderMutation, useGetAllOrdersQuery, useUpdateOrderMutation } = orders;
 

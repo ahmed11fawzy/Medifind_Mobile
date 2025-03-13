@@ -1,6 +1,6 @@
 import Icon from "react-native-vector-icons/FontAwesome5";
 import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import { View,Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import {
   TextInput,
   Button,
@@ -16,11 +16,12 @@ import {
 } from "../redux/Slice/medicine";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import {Colors} from '../constants/RootColor' 
 
 const theme = {
   colors: {
-    primary: "#66d5c1",
-    onSurfaceVariant: "#2ab5a0",
+    primary:  Colors.mainColor,
+    onSurfaceVariant: Colors.mainColor,
     background: "#ffffff",
     text: "#333",
     error: "#D32F2F",
@@ -144,9 +145,10 @@ export const AddMedicine = () => {
   return (
     <PaperProvider theme={theme}>
       <View style={styles.container}>
+        <View><Text style={styles.title}>Add Medicine</Text></View>
         {/* Donation Icon */}
         <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Icon name="hand-holding-heart" size={50} color="#24d1b7" />
+          <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
         </View>
 
         {/* Medicine Name Input */}
@@ -156,6 +158,7 @@ export const AddMedicine = () => {
           onChangeText={setName}
           mode="outlined"
           style={styles.input}
+          outlineColor={Colors.mainColor}
         />
         {errors.name && <HelperText type="error">{errors.name}</HelperText>}
 
@@ -166,10 +169,12 @@ export const AddMedicine = () => {
           onFocus={() => setShowDatePicker(true)}
           mode="outlined"
           style={styles.input}
+          outlineColor={Colors.mainColor}
+
           right={
             <TextInput.Icon
               icon="calendar"
-              color="#43a694"
+              color={Colors.mainColor}
               onPress={() => setShowDatePicker(true)}
             />
           }
@@ -193,6 +198,8 @@ export const AddMedicine = () => {
           value={concentration}
           onChangeText={setConcentration}
           mode="outlined"
+          outlineColor={Colors.mainColor}
+
           style={styles.input}
         />
         {errors.concentration && (
@@ -208,7 +215,7 @@ export const AddMedicine = () => {
             <Icon
               name="camera"
               size={20}
-              color="#43a694"
+              color={Colors.mainColor}
               style={{ marginRight: 10 }}
             />
             <Button mode="text" color="#43a694">
@@ -259,14 +266,22 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     backgroundColor: "#ffffff",
   },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 40,
+    color: Colors.mainColor,
+    fontFamily: "Georgia",
+  },
   input: {
     marginBottom: 12,
     width: "100%",
     borderRadius: 12,
     paddingHorizontal: 12,
+    border:Colors.mainColor
   },
   button: {
-    backgroundColor: "#24d1b7",
+    backgroundColor: Colors.mainColor,
     marginTop: 15,
     width: "60%",
     borderRadius: 12,
@@ -286,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#66d5c1",
+    borderColor: Colors.mainColor,
     padding: 10,
     width: "100%",
   },
