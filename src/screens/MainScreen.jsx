@@ -28,7 +28,7 @@ const RequestMedicine = lazy(() => import('./RequestMedicine').then(module => ({
 const Needs = lazy(() => import('./Needs').then(module => ({ default: module.Needs })));
 const Update = lazy(() => import('./Update').then(module => ({ default: module.Update })));
 const RequestsReview = lazy(() => import('./RequestsReview').then(module => ({ default: module.RequestsReview })));
-
+const OffersReview= lazy(() => import('./OffersReview').then(module => ({ default: module.OffersReview })));
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 const MainScreen = () => {
@@ -177,6 +177,17 @@ const MainScreen = () => {
                     <Suspense fallback={<LoadingScreen />}>
                       <ProtectedRoute
                         component={RequestsReview}
+                        allowedRoles={[ROLES.DOCTOR]}
+                        {...props}
+                      />
+                    </Suspense>
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="OffersReview">
+                  {(props) => (
+                    <Suspense fallback={<LoadingScreen />}>
+                      <ProtectedRoute
+                        component={OffersReview}
                         allowedRoles={[ROLES.DOCTOR]}
                         {...props}
                       />

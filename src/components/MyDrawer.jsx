@@ -26,12 +26,8 @@ export const DrawerContent = (props) => {
   const handleLogout = async () => {
     try {
       await logout();
-      props.navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Auth' }],
-        })
-      );
+      // Simply navigate to the Login screen
+      props.navigation.navigate('Main', { screen: 'Login' });
     } catch (error) {
       console.error('Logout error:', error);
     }
