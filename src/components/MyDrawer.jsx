@@ -10,26 +10,30 @@ import {
 import { Ionicons } from "@expo/vector-icons"; // Make sure to install this:  `expo install @expo/vector-icons`
 import { useAuth } from "../hooks/useAuth";
 import { useGetUserByIdQuery } from "../redux/Slice/user";
-import { CommonActions, useRoute } from '@react-navigation/native';
+import { CommonActions } from "@react-navigation/native";
 
 export const DrawerContent = (props) => {
   const { user, userId, logout } = useAuth();
-  const currentRoute = props.state?.routeNames[props.state?.index] || '';
+  const currentRoute = props.state?.routeNames[props.state?.index] || "";
 
-  const {
-    data: userData,
-    isLoading: isLoadingUser,
-  } = useGetUserByIdQuery(userId);
+  const { data: userData, isLoading: isLoadingUser } =
+    useGetUserByIdQuery(userId);
 
   const userDisplayData = Array.isArray(userData) ? userData[0] : userData;
 
   const handleLogout = async () => {
     try {
       await logout();
-      // Simply navigate to the Login screen
-      props.navigation.navigate('Main', { screen: 'Login' });
+ 
+      props.navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        })
+      );
+
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -48,12 +52,8 @@ export const DrawerContent = (props) => {
               style={styles.profileImage}
             />
             <View>
-              <Text style={styles.name}>
-                {userDisplayData?.name}
-              </Text>
-              <Text style={styles.email}>
-                {userDisplayData?.email}
-              </Text>
+              <Text style={styles.name}>{userDisplayData?.name}</Text>
+              <Text style={styles.email}>{userDisplayData?.email}</Text>
             </View>
           </View>
           <TouchableOpacity onPress={() => props.navigation.closeDrawer()}>
@@ -67,49 +67,49 @@ export const DrawerContent = (props) => {
         <DrawerItem
           icon="home-outline"
           label="Home"
-          onPress={() => props.navigation.navigate("Main", { screen: "Home" })}
+          onPress={() => props.navigation.navigate("Home")}
           isActive={currentRoute === "Home"}
         />
         <DrawerItem
           icon="person-outline"
           label="Profile"
-          onPress={() => props.navigation.navigate("Main", { screen: "ProfilePage" })}
+          onPress={() => props.navigation.navigate("ProfilePage")}
           isActive={currentRoute === "ProfilePage"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Add Medicine"
-          onPress={() => props.navigation.navigate("Main", { screen: "AddMedicine" })}
+          onPress={() => props.navigation.navigate("AddMedicine")}
           isActive={currentRoute === "AddMedicine"}
         />
         <DrawerItem
           icon="cash-outline"
           label="Donations"
-          onPress={() => props.navigation.navigate("Main", { screen: "Donations" })}
+          onPress={() => props.navigation.navigate("Donations")}
           isActive={currentRoute === "Donations"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Request Medicine"
-          onPress={() => props.navigation.navigate("Main", { screen: "RequestMedicine" })}
+          onPress={() => props.navigation.navigate("RequestMedicine")}
           isActive={currentRoute === "RequestMedicine"}
         />
         <DrawerItem
           icon="help-circle-outline"
           label="Needs"
-          onPress={() => props.navigation.navigate("Main", { screen: "Needs" })}
+          onPress={() => props.navigation.navigate("Needs")}
           isActive={currentRoute === "Needs"}
         />
         <DrawerItem
           icon="document-text-outline"
           label="Requests Review"
-          onPress={() => props.navigation.navigate("Main", { screen: "RequestsReview" })}
+          onPress={() => props.navigation.navigate("RequestsReview")}
           isActive={currentRoute === "RequestsReview"}
         />
         <DrawerItem
           icon="medkit-outline"
           label="Offers Review"
-          onPress={() => props.navigation.navigate("Main", { screen: "OffersReview" })}
+          onPress={() => props.navigation.navigate("OffersReview")}
           isActive={currentRoute === "OffersReview"}
         />
         <DrawerItem
@@ -126,11 +126,8 @@ export const DrawerContent = (props) => {
 // Reusable Drawer Item Component
 const DrawerItem = ({ icon, label, onPress, isActive }) => {
   return (
-    <TouchableOpacity 
-      style={[
-        styles.drawerItem, 
-        isActive && styles.activeDrawerItem
-      ]} 
+    <TouchableOpacity
+      style={[styles.drawerItem, isActive && styles.activeDrawerItem]}
       onPress={onPress}
     >
       <Ionicons name={icon} size={22} color={isActive ? "#fff" : "black"} />
@@ -194,7 +191,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   activeDrawerItem: {
-    backgroundColor: "#4dd3da",
+    backgroundColor: "#00bcd4",
   },
   drawerLabel: {
     fontSize: 16,
