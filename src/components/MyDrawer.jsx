@@ -24,12 +24,14 @@ export const DrawerContent = (props) => {
   const handleLogout = async () => {
     try {
       await logout();
+ 
       props.navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
         })
       );
+
     } catch (error) {
       console.error("Logout error:", error);
     }

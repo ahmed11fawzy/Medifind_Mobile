@@ -18,6 +18,7 @@ const LoadingScreen = () => (
 );
 
 // Lazy loaded components
+
 const Home = lazy(() =>
   import("./Home").then((module) => ({ default: module.Home }))
 );
@@ -53,6 +54,7 @@ const RequestsReview = lazy(() =>
 const OffersReview = lazy(() =>
   import("./OffersReview").then((module) => ({ default: module.OffersReview }))
 );
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -195,6 +197,7 @@ const MainScreen = () => {
             gestureEnabled: false,
           }}
         >
+
           {/* Auth Screens */}
           <Stack.Screen name="Login">
             {(props) => (
@@ -209,6 +212,7 @@ const MainScreen = () => {
               <Suspense fallback={<LoadingScreen />}>
                 <RegisterPage {...props} />
               </Suspense>
+
             )}
           </Stack.Screen>
 
