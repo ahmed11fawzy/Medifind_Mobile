@@ -1,263 +1,172 @@
-import React, { useLayoutEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Image, Text, ActivityIndicator, Platform } from "react-native";
-import { TextInput, Button } from "react-native-paper";
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
-import { useAddOrderMutation, useGetOrderQuery } from "../redux/Slice/order";
-import { useAuth } from "../hooks/useAuth"
-import { MyButton } from "../components/MyButton";
-import {MyTextInput} from "../components/MyTextInput"
+import { useAddOrderMutation } from "../redux/Slice/order";
+import { useSelector } from "react-redux";
 
 export const RequestMedicine = () => {
-  const navigation = useNavigation();
-  const { userId } = useAuth();
-  const [imageUri, setImageUri] = useState(null);
+  const [medicineName, setMedicineName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [errors, setErrors] = useState({ medicineName: false, description: false });
-  const [addOrder, { isLoading }] =  useAddOrderMutation();
-  const [medicineName, setMedicineName] = useState();
-  const [description, setDescription] = useState();
 
-  useLayoutEffect(() => {
-   
-    navigation.setOptions({
-      headerTitle: () => (
-        <View style={{ 
-          flexDirection: "row-reverse", 
-          alignItems: "center", 
-          justifyContent: navigation.canGoBack() ? "flex-start" : "center" 
-        }}>
-          <Image
-            source={require("../../assets/logo.jpg")} 
-            style={{ width: 30, height: 30, borderRadius: 15, marginLeft: navigation.canGoBack() ? 80 : 110 }} 
-            resizeMode="contain"
-          />
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>RequestMedicine</Text>
-        </View>
-      ),
-    });
-  }, [navigation]); 
+  // Get user_id from Redux state
+  const userId = useSelector((state) => state.auth.user?.id);
+
+  // Hook for adding an order
+  const [addOrder, { isLoading: isAddingOrder }] = useAddOrderMutation();
+
   const pickImage = async () => {
-    try {
-      const isWeb = Platform.OS === 'web';
-      if (isWeb) {
-        console.log("Using web file picker");
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        const filePromise = new Promise((resolve) => {
-          input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const base64 = reader.result.split(',')[1];
-                resolve({
-                  uri: file,
-                  base64: base64,
-                  width: 300, 
-                  height: 300
-                });
-              };
-              reader.readAsDataURL(file);
-            } else {
-              resolve(null);
-            }
-          };
-        });
-        input.click();
-        const result = await filePromise;
-        if (result) {
-          await uploadImageToCloudinary(result);
-        }
-      } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          alert("Permission to access media library is required.");
-          return;
-        }
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.8,
-          base64: true,
-        });
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-        if (!result.canceled) {
-          await uploadImageToCloudinary(result.assets[0]);
-        }
-      }
-    } catch (error) {
-      console.error("Error picking image:", error);
-      alert("Failed to pick image. Please try again.");
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
     }
   };
-  const uploadImageToCloudinary = async (imageAsset) => {
+
+  const uploadImage = async () => {
+    if (!image) {
+      Alert.alert("Error", "Please select an image first.");
+      return null;
+    }
+
     setUploading(true);
     try {
-      const isWeb = Platform.OS === 'web';
-      let formData = new FormData();
-      
-      if (isWeb) {
-        if (imageAsset.base64) {
-          const base64Response = await fetch(`data:image/jpeg;base64,${imageAsset.base64}`);
-          const blob = await base64Response.blob();
-          formData.append("file", blob);
-        } else {
-          formData.append("file", imageAsset.uri);
-        }
-      } else {
-        formData.append("file", {
-          uri: imageAsset.uri,
-          type: "image/jpeg",
-          name: "upload.jpg",
-        });
-      }
+      const formData = new FormData();
+      formData.append("file", {
+        uri: image,
+        type: "image/jpeg",
+        name: "medicine.jpg",
+      });
       formData.append("upload_preset", "medifined");
       formData.append("cloud_name", "doxyvufkz");
 
-      console.log("Uploading to Cloudinary...");
-      
       const response = await axios.post(
         "https://api.cloudinary.com/v1_1/doxyvufkz/image/upload",
         formData,
         {
-          headers: { 
+          headers: {
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      console.log("Upload successful:", response.data);
-      setImageUri(response.data.secure_url);
-    } catch (error) {
-      console.error("Upload failed:", error);
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
-        console.error("Error response headers:", error.response.headers);
-        if (error.response.data.error && error.response.data.error.message) {
-          if (error.response.data.error.message.includes("upload preset")) {
-            alert("Cloudinary Error: Upload preset 'medifined' not found or not properly configured. Please check your Cloudinary settings.");
-          } else {
-            alert(`Failed to upload image: ${error.response.data.error.message}`);
-          }
-        } else {
-          alert(`Failed to upload image: ${error.response.status} ${error.response.statusText}`);
-        }
-      } else if (error.request) {
-        console.error("Error request:", error.request);
-        alert("Failed to upload image: No response from server");
-      } else {
-        console.error("Error message:", error.message);
-        alert(`Failed to upload image: ${error.message}`);
-      }
-    } finally {
       setUploading(false);
+      return response.data.secure_url; // Return the uploaded image URL
+    } catch (error) {
+      setUploading(false);
+      console.error("Image upload failed:", error);
+      Alert.alert(
+        "Error", 
+        "Failed to upload the image. Please try again or contact support if the issue persists."
+      );
+      return null;
     }
   };
-  const validateForm = async () => {
-     let newErrors = {
-       medicineName: medicineName.trim() === "",
-       description: description.trim() === "",
-     };
- 
-     setErrors(newErrors);
- 
-     if (!newErrors.medicineName && !newErrors.description) {
-       try {
-         if (!imageUri) {
-           alert("Please upload a prescription image");
-           return;
-         }
-         
-         const orderData = {
-           req_name: medicineName,
-           req_description: description,
-           prescription_img: imageUri,
-           requested: true,
-           status: false,
-           examined: false,
-           user_id: userId,        
-       };
- 
-       console.log("🚀 Sending order data:", orderData);
- 
-         try {
-           const result = await addOrder(orderData).unwrap();
-           console.log('order added successfully:', result);
-           alert("order submitted successfully!");
-           resetForm();
-           navigation.navigate("Needs");
-         } catch (apiError) {
-           console.error('API Error:', apiError);
-           let errorMessage = 'Unknown error';
-           try {
-             if (typeof apiError.data === 'string') {
-               const errorData = JSON.parse(apiError.data);
-               errorMessage = errorData.data || 'Server error';
-               console.log('Full error data:', errorData);
-             } else if (apiError.data && apiError.data.data) {
-               errorMessage = apiError.data.data;
-             }
-           } catch (e) {
-             console.error('Error parsing error message:', e);
-             errorMessage = apiError.message || 'Server error';
-           }
-           
-           alert(`Request failed: ${errorMessage}`);
-         }
-       } catch (error) {
-         console.error("Submission error:", error);
-         alert("Failed to submit request. Please try again later.");
-       }
-     }
-   };
-  
-  const resetForm = () => {
-    setMedicineName("");
-    setDescription("");
-    setImageUri(null);
-    setErrors({ medicineName: false, description: false });
+
+  const handleRequestMedicine = async () => {
+    if (!medicineName || !description || !image) {
+      Alert.alert("Error", "Please fill all fields and upload an image.");
+      return;
+    }
+
+    if (!userId) {
+      Alert.alert("Error", "User not authenticated. Please login again.");
+      return;
+    }
+
+    try {
+      const uploadedImageUrl = await uploadImage();
+      if (!uploadedImageUrl) return;
+
+      const orderData = {
+        req_name: medicineName,
+        req_description: description,
+        prescription_img: uploadedImageUrl,
+        user_id: userId,
+      };
+
+      const response = await addOrder(orderData).unwrap();
+      console.log("Order added successfully:", response.data);  // Only log the data part
+
+      Alert.alert(
+        "Success",
+        `Medicine Requested Successfully!\nName: ${medicineName}\nDescription: ${description}`
+      );
+
+      // Reset fields after successful submission
+      setMedicineName("");
+      setDescription("");
+      setImage(null);
+    } catch (error) {
+      console.error("Failed to request medicine:", error);
+      Alert.alert(
+        "Error",
+        error.data?.message || "Failed to request medicine. Please try again."
+      );
+    }
   };
 
   return (
     <View style={styles.container}>
-<Icon name="hand-holding-medical" size={40} color="#01b3bd" style={{marginBottom: 60,marginTop: -30}} />
-    <View style={styles.imagePickerContainer}>
-  <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-    <Icon name="camera" size={20} color="#01b3bd" style={styles.cameraIcon } />
-    <Button mode="text" color="#01b3bd">
-      {imageUri ?imageUri.split('/').pop() : "Upload Medicine Image"}
-    </Button>
-  </TouchableOpacity>
-</View>
+      <Text style={styles.title}>Request Medicine</Text>
+      <Icon name="favorite" size={50} color="#00bcd4" style={styles.icon} />
 
-      <MyTextInput
-        label="Medicine Name"
-        value={medicineName}
-        onChangeText={setMedicineName}
-        mode="outlined"
-        style={[styles.input, styles.customInput]}
-        theme={{ colors: { primary: errors.medicineName ? "red" : "#888" }}}
-        error={errors.medicineName}
-      />
-      {errors.medicineName && <Text style={styles.errorText}>Medicine name is required.</Text>}
-      <MyTextInput
-        label="Description"
-        value={description}
-        onChangeText={setDescription}
-        mode="outlined"
-        multiline
-        numberOfLines={4}
-        theme={{ colors: { primary: errors.description ? "red" : "#888" } }}
-        error={errors.description}
-      />
-      {errors.description && <Text style={styles.errorText}>Description is required.</Text>}
-      <MyButton title="Add Request" onPress={validateForm}/>
+      {/* Medicine Name Input */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Medicine Name"
+          value={medicineName}
+          onChangeText={(text) => setMedicineName(text)}
+        />
+      </View>
+
+      {/* Description Input */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Description"
+          value={description}
+          onChangeText={(text) => setDescription(text)}
+          multiline
+        />
+      </View>
+
+      {/* Selected Image Preview */}
+      {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
+
+      {/* Upload Image Button */}
+      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+        <Icon name="photo-camera" size={24} color="#00bcd4" />
+        <Text style={styles.uploadButtonText}>Select Image</Text>
+      </TouchableOpacity>
+
+      {/* Submit Button */}
+      <TouchableOpacity
+        style={[styles.submitButton, isAddingOrder && styles.disabledButton]}
+        onPress={handleRequestMedicine}
+        disabled={isAddingOrder}
+      >
+        <Text style={styles.submitButtonText}>
+          {isAddingOrder ? "Submitting..." : "Request Medicine"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -265,60 +174,76 @@ export const RequestMedicine = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "#e6e6e6",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#fff",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    color: "#00bcd4",
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
+  icon: {
+    marginBottom: 30,
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 15,
   },
   input: {
-    width: "100%",
-    marginBottom: 10,
-  },
-  customInput: {
     backgroundColor: "#fff",
-    fontSize: 12,
+    borderWidth: 1,
+    borderColor: "#00bcd4",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    height: 50,
+    fontSize: 16,
+    color: "#333",
   },
-  descriptionInput: {
+  textArea: {
     height: 100,
     textAlignVertical: "top",
   },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    alignSelf: "flex-start",
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 20,
-  },
-  imagePickerContainer: {
-    width: "100%",
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  imagePicker: {
+  uploadButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFBFE",
-    borderRadius: 22,
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#32323390",
-    padding: 5,
+    borderColor: "#00bcd4",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
     width: "100%",
-    height: 55,
+    marginBottom: 20,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  uploadButtonText: {
+    color: "#00bcd4",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  submitButton: {
+    backgroundColor: "#00bcd4",
+    borderRadius: 8,
+    paddingVertical: 15,
+    width: "100%",
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   imagePreview: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    marginVertical: 10,
+    width: 200,
+    height: 200,
     resizeMode: "cover",
+    marginBottom: 20,
+    borderRadius: 200,
   },
-  cameraIcon: {
-    backgroundColor: "#FFFBFE",
-    padding: 3,
-    borderRadius: 50,
-  },
-  
 });
