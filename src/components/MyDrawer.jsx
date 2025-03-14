@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     backgroundColor: "#fff",
     paddingInline: 16,
+    marginTop: 17,
   },
   profileHeader: {
     marginTop: 35,
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     marginBottom: 10,
     paddingTop: 10,
+    paddingBottom: 10,
   },
   profileInfo: {
     flexDirection: "row",
