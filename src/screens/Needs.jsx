@@ -3,7 +3,7 @@ import { View, StyleSheet, Image, FlatList, Alert } from "react-native";
 import { Text, Button, Surface } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { useGetOrderQuery, useDeleteOrderMutation, useUpdateOrderMutation } from "../redux/Slice/order";
-import {useAddRequestMutation} from "../redux/Slice/request";
+import { useAddRequestMutation } from "../redux/Slice/request";
 import { useAuth } from "../hooks/useAuth";
 import {
   useGetUserRequestsQuery,
@@ -152,6 +152,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
     justifyContent: "space-between",
     marginTop: 8,
   },

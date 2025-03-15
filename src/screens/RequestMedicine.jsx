@@ -20,6 +20,9 @@ export const RequestMedicine = () => {
   const [medicineName, setMedicineName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [medicineName, setMedicineName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const route = useRoute();
 
@@ -39,11 +42,26 @@ export const RequestMedicine = () => {
       aspect: [4, 3],
       quality: 1,
     });
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
   };
+
+  const uploadImage = async () => {
+    if (!image) {
+      Alert.alert("Error", "Please select an image first.");
+      return null;
+    }
+
 
   const uploadImage = async () => {
     if (!image) {
@@ -59,19 +77,29 @@ export const RequestMedicine = () => {
         type: "image/jpeg",
         name: "medicine.jpg",
       });
+      const formData = new FormData();
+      formData.append("file", {
+        uri: image,
+        type: "image/jpeg",
+        name: "medicine.jpg",
+      });
       formData.append("upload_preset", "medifined");
       formData.append("cloud_name", "doxyvufkz");
+
 
       const response = await axios.post(
         "https://api.cloudinary.com/v1_1/doxyvufkz/image/upload",
         formData,
         {
           headers: {
+          headers: {
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
+      setUploading(false);
+      return response.data.secure_url; // Return the uploaded image URL
       setUploading(false);
       return response.data.secure_url; // Return the uploaded image URL
     } catch (error) {
@@ -197,8 +225,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#e6e6e6",
+    backgroundColor: "#e6e6e6",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    color: "#00bcd4",
     paddingHorizontal: 20,
   },
   title: {
@@ -210,10 +244,16 @@ const styles = StyleSheet.create({
   icon: {
     marginBottom: 30,
   },
+  icon: {
+    marginBottom: 30,
+  },
+  inputContainer: {
   inputContainer: {
     width: "100%",
     marginBottom: 15,
+    marginBottom: 15,
   },
+  input: {
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -223,7 +263,15 @@ const styles = StyleSheet.create({
     height: 50,
     fontSize: 16,
     color: "#333",
+    borderWidth: 1,
+    borderColor: "#00bcd4",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    height: 50,
+    fontSize: 16,
+    color: "#333",
   },
+  textArea: {
   textArea: {
     height: 100,
     textAlignVertical: "top",
@@ -255,7 +303,45 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     width: "100%",
     alignItems: "center",
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#00bcd4",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
+    width: "100%",
+    marginBottom: 20,
   },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  uploadButtonText: {
+    color: "#00bcd4",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  submitButton: {
+    backgroundColor: "#00bcd4",
+    borderRadius: 8,
+    paddingVertical: 15,
+    width: "100%",
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  imagePreview: {
+    width: 200,
+    height: 200,
+    resizeMode: "cover",
+    marginBottom: 20,
+    borderRadius: 200,
   submitButtonText: {
     color: "#fff",
     fontSize: 18,
