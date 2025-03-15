@@ -19,6 +19,7 @@ export function Needs() {
   const [updateRequest] = useUpdateRequestMutation();
   const [updateOrder] = useUpdateOrderMutation(); 
   const [deleteRequest] = useDeleteRequestMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
   const [Requests, setRequests] = useState([]);
   const [Orders, setOrders] = useState([]);
 
@@ -29,6 +30,7 @@ export function Needs() {
     if (orders) {
       setOrders(orders.data);
     }
+
   }, [requests, orders]);
 
   const handleUpdateRequest = async (item) => {
@@ -45,13 +47,29 @@ export function Needs() {
       Alert.alert("Error", "Failed to delete request.");
     }
   };
+  const handleDelete = async ({req_id, user_id , medicine}) => {
+    try {
+      if (medicine) {
+        await deleteRequest({req_id, user_id }).unwrap();
+        setRequests((prevRequests) => prevRequests.filter((req) => req._id !== req_id));
+        Alert.alert("Success", "Request deleted successfully!");
+      }else{
+        await deleteOrder({ req_id, user_id }).unwrap();
+        setOrders((prevOrders) => prevOrders.filter((order) => order._id !== req_id));
+        Alert.alert("Success", "Order deleted successfully!");
+      }
+    } catch (error) { 
+      console.error("Delete Error:", error);
+      Alert.alert("Error", "Failed to delete order.");
+    }
+  };
 
   const renderItem = ({ item }) => (
     <Surface style={styles.card}>
       <View style={styles.contentContainer}>
         <Image
           source={{
-            uri: item.prescription_img,
+            uri: item.prescription_img || item.medicine.image_path,
           }}
           style={styles.image}
         />
@@ -60,22 +78,27 @@ export function Needs() {
           <View style={styles.row}>
             <Text style={styles.label}>Name:</Text>
             <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
-              {item.req_name|| "Unknown"}
+              {item.req_name || item.medicine.name}
             </Text>
           </View>
 
-          {!item.requested && !item.examined && !item.status && <View>
-            <Button
-              mode="contained"
-              onPress={() => console.log("checkout")}
-              style={styles.checkoutButton}
-              labelStyle={styles.buttonLabel}
-            >
-              CheckOut
-            </Button>
-          </View>}
-          {item.requested && !item.examined && !item.status && <View>
-            <Text>waiting for approval</Text></View>}
+          {!item.requested && !item.examined && !item.status && (
+            <View>
+              <Button
+                mode="contained"
+                onPress={() => console.log("checkout")}
+                style={styles.checkoutButton}
+                labelStyle={styles.buttonLabel}
+              >
+                CheckOut
+              </Button>
+            </View>
+          )}
+          {item.requested && !item.examined && !item.status && (
+            <View>
+              <Text>waiting for approval</Text>
+            </View>
+          )}
 
           <View style={styles.buttonContainer}>
             <Button
@@ -88,15 +111,15 @@ export function Needs() {
             </Button>
 
             <Button
-              mode="contained"
-              onPress={() => handleDeleteRequest(item._id)}
+              onPress={() =>
+                handleDelete({ req_id: item._id, user_id: userId, medicine: item.medicine })
+              }
               style={styles.deleteButton}
               labelStyle={styles.buttonLabel}
             >
               Delete
             </Button>
           </View>
-        
         </View>
       </View>
     </Surface>
@@ -104,7 +127,7 @@ export function Needs() {
 
   return (
     <FlatList
-      data={Orders}
+      data={[...Orders, ...Requests]}
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.container}
