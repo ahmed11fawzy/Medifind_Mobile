@@ -1,178 +1,175 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Image, FlatList, Alert } from "react-native";
+import { Text, Button, Surface } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import { useGetOrderQuery, useDeleteOrderMutation, useUpdateOrderMutation } from "../redux/Slice/order";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useGetUserRequestsQuery,
+  useUpdateRequestMutation,
+  useDeleteRequestMutation,
+} from "../redux/Slice/request";
 
-export const Needs = () => {
+export function Needs() {
   const { userId } = useAuth();
-  console.log("User ID:", userId);
-  const { data: orders, error, isLoading, refetch } = useGetOrderQuery(userId);
-  const [deleteOrderMutation] = useDeleteOrderMutation();
+  const navigation = useNavigation();
+  const { data: requests } = useGetUserRequestsQuery(userId);
+  const { data: orders } = useGetOrderQuery(userId);
+  const [updateRequest] = useUpdateRequestMutation();
   const [updateOrder] = useUpdateOrderMutation();
-  const [userOrders, setUserOrders] = useState([]);
-  const navigation = useNavigation();  // للحصول على الدالة الخاصة بالتوجيه
-  console.log("User ID:", userId);
-
+  const [deleteRequest] = useDeleteRequestMutation();
+  const [Requests, setRequests] = useState([]);
+  const [Orders, setOrders] = useState([]);
 
   useEffect(() => {
-    if (orders) {
-      console.log("Orders object:", orders);
-      console.log("Extracted orders array:", orders?.data);
-      setUserOrders(orders?.data || []);
+    if (requests) {
+      setRequests(requests.data);
     }
-  }, [orders]);
+    if (orders) {
+      setOrders(orders.data);
+    }
+  }, [requests, orders]);
 
-  const handleUpdate = (orderId) => {
-    navigation.navigate("Update", { orderId });
+  const handleUpdateRequest = async (item) => {
+    navigation.navigate("RequestMedicine", { item });
   };
-  
-  useEffect(() => {
-    if (orders) {
-      setUserOrders(orders?.data || []);
-    }
-  }, [orders]);
-  
-  useEffect(() => {
-    // لما نرجع من صفحة RequestMedicine، نعمل refetch أو invalidate للـ data
-    refetch();
-  }, [navigation]);
-  
-  
-  
-  const handleDelete = async (orderId) => {
-    console.log(`🟡 Attempting to delete order ID: ${orderId}`);
-  
+
+  const handleDeleteRequest = async (id) => {
     try {
-      // إرسال الـ req_id و user_id عبر الـ headers
-      const response = await deleteOrderMutation({
-        req_id: orderId,       // الـ req_id
-        user_id: userId        // الـ user_id
-      }).unwrap();
-  
-      console.log("✅ Delete response:", response);
+      await deleteRequest({ id ,userId}).unwrap();
+      setRequests((prevRequests) => prevRequests.filter((req) => req._id !== id));
+      Alert.alert("Success", "Request deleted successfully!");
     } catch (error) {
-      console.error("❌ Delete failed:", error);
+      console.error("Delete Error:", error);
+      Alert.alert("Error", "Failed to delete request.");
     }
   };
 
-  
-  
+  const renderItem = ({ item }) => (
+    <Surface style={styles.card}>
+      <View style={styles.contentContainer}>
+        <Image
+          source={{
+            uri: item.prescription_img,
+          }}
+          style={styles.image}
+        />
 
-  if (isLoading) {
-    return <ActivityIndicator size="large" color="#007bff" style={styles.loader} />;
-  }
+        <View style={styles.details}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+              {item.req_name|| "Unknown"}
+            </Text>
+          </View>
 
-  if (error) {
-    return <Text style={styles.errorText}>Error loading orders</Text>;
-  }
+          {!item.requested && !item.examined && !item.status && <View>
+            <Button
+              mode="contained"
+              onPress={() => console.log("checkout")}
+              style={styles.checkoutButton}
+              labelStyle={styles.buttonLabel}
+            >
+              CheckOut
+            </Button>
+          </View>}
+          {item.requested && !item.examined && !item.status && <View>
+            <Text>waiting for approval</Text></View>}
+
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={() => handleUpdateRequest(item)}
+              style={styles.addButton}
+              labelStyle={styles.buttonLabel}
+            >
+              Update
+            </Button>
+
+            <Button
+              mode="contained"
+              onPress={() => handleDeleteRequest(item._id)}
+              style={styles.deleteButton}
+              labelStyle={styles.buttonLabel}
+            >
+              Delete
+            </Button>
+          </View>
+        
+        </View>
+      </View>
+    </Surface>
+  );
 
   return (
-    <View style={styles.container}>
-      {userOrders.length === 0 ? (
-        <Text style={styles.noOrdersText}>No orders found</Text>
-      ) : (
-        <FlatList
-          data={userOrders}
-          keyExtractor={(item) => item._id?.toString() || Math.random().toString()}
-          renderItem={({ item }) => (
-            <View style={styles.orderItem}>
-              <Image source={{ uri: item.prescription_img }} style={styles.orderImage} />
-              <View style={styles.textContainer}>
-                <Text style={styles.orderTitle}>{item.req_name}</Text>
-                <Text style={styles.orderDescription}>{item.req_description}</Text>
-
-                {/* أزرار التحديث والحذف */}
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.updateButton} onPress={() => handleUpdate(item._id)}>
-                    <Text style={styles.buttonText}>Update</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item._id)}>
-                    <Text style={styles.buttonText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
-        />
-      )}
-    </View>
+    <FlatList
+      data={Orders}
+      renderItem={renderItem}
+      keyExtractor={(item) => item._id}
+      contentContainerStyle={styles.container}
+    />
   );
-};
+}
 
-// ✅✅✅ تصميم الأزرار والتنسيقات ✅✅✅
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+  card: {
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#dff5f0",
+    elevation: 2,
+    marginHorizontal: 10,
+    overflow: "hidden",
   },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  noOrdersText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#666",
-  },
-  orderItem: {
+  contentContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
   },
-  orderImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-    marginRight: 10,
+  image: {
+    width: 100,
+    height: "100%",
+    resizeMode: "cover",
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
   },
-  textContainer: {
+  details: {
     flex: 1,
+    justifyContent: "space-between",
+    padding: 16,
   },
-  orderTitle: {
-    fontSize: 16,
+  row: {
+    flexDirection: "row",
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  label: {
     fontWeight: "bold",
+    marginRight: 8,
+    fontSize: 16,
   },
-  orderDescription: {
-    fontSize: 14,
-    color: "#666",
+  value: {
+    fontSize: 16,
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: "row",
-    marginTop: 10,
+    justifyContent: "space-between",
+    marginTop: 8,
   },
-  updateButton: {
-    backgroundColor: "#007bff",
-    padding: 8,
-    borderRadius: 5,
-    marginRight: 10,
+  addButton: {
+    backgroundColor: "#0fd78a",
+    width: "48%",
+  },
+  checkoutButton: {
+    backgroundColor: "#00bcd4",
+    width: "95%",
+    marginTop: 5,
+    marginHorizontal: 4,
   },
   deleteButton: {
-    backgroundColor: "red",
-    padding: 8,
-    borderRadius: 5,
+    backgroundColor: "#e64e67",
+    width: "48%",
   },
-  buttonText: {
-    color: "#fff",
+  buttonLabel: {
     fontSize: 14,
-    textAlign: "center",
+    color: "white",
   },
 });
-
-export default Needs;
