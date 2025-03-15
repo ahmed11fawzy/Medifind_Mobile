@@ -52,33 +52,26 @@ export const orders = coreApi.injectEndpoints({
             }),
             invalidatesTags: ['Orders'],
         }),
-
-        
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
-              url: 'orders/', // نفس الـ endpoint في الـ backend
-              method: "DELETE",
-              headers: {       // إرسال الـ req_id و user_id عبر الـ headers
-                "Content-Type": "application/json",
-                "req_id": req_id,    // ارسال الـ req_id
-                "user_id": user_id,  // ارسال الـ user_id
+                url: 'orders/', // نفس الـ endpoint في الـ backend
+                method: "DELETE",
+                headers: {       // إرسال الـ req_id و user_id عبر الـ headers
+                    "Content-Type": "application/json",
+                    "req_id": req_id,    // ارسال الـ req_id
+                    "user_id": user_id,  // ارسال الـ user_id
                 },
             }),
             async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {
-              try {
-                await queryFulfilled;
-                console.log("✅ Order deleted successfully:", req_id);
-                dispatch(coreApi.util.invalidateTags(["Orders"])); // تحديث البيانات بعد الحذف
-              } catch (error) {
-                console.error("❌ Error deleting order:", error);
-              }
+                try {
+                    await queryFulfilled;
+                    console.log("✅ Order deleted successfully:", req_id);
+                    dispatch(coreApi.util.invalidateTags(["Orders"])); // تحديث البيانات بعد الحذف
+                } catch (error) {
+                    console.error("❌ Error deleting order:", error);
+                }
             },
-          }),
-          
-                    
-          
-          
-
+        }),
         getAllOrders: build.query({  //for doctor view in requestsReview
             query: () => ({
                 url: 'orders',

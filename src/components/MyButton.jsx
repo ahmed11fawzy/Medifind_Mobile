@@ -8,7 +8,7 @@ export function MyButton({ title, onPress }) {
       <Button
         buttonColor="#01b3bd"
         mode="contained"
-        style={{ width: 200, marginTop: 12 }}
+        style={{ width: 180, marginTop: 12 ,marginLeft:10}}
         onPress={onPress}
       >
         {title}

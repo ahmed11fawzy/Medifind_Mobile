@@ -1,14 +1,18 @@
+
 import Icon from "react-native-vector-icons/FontAwesome5";
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+
 import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+
 import { useAddMedicineMutation, useUpdateMedicineMutation } from "../redux/Slice/medicine";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Colors } from "../constants/RootColor";
+
 
 const theme = {
   colors: {
@@ -39,6 +43,7 @@ export const AddMedicine = () => {
   const [errors, setErrors] = useState({});
   const [isUploading, setUploading] = useState(false);
 
+
   useEffect(() => {
     if (med_id) {
       setName(route.params?.name || "");
@@ -65,6 +70,7 @@ export const AddMedicine = () => {
       setFormattedDate(selectedDate.toISOString().split("T")[0]);
     }
   };
+
 
   const handleImagePick = async () => {
     try {
@@ -127,6 +133,7 @@ export const AddMedicine = () => {
       setImg("");
       setErrors({});
       navigation.navigate("Donations");
+
     } catch (error) {
       Alert.alert("Error", "Failed to process the medicine.");
     }
@@ -135,6 +142,7 @@ export const AddMedicine = () => {
   return (
     <PaperProvider theme={theme}>
       <View style={styles.container}>
+
         <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
 
         <View style={{ alignItems: "center", marginBottom: 20 }}>
@@ -159,14 +167,21 @@ export const AddMedicine = () => {
           onFocus={() => setShowDatePicker(true)}
           mode="outlined"
           style={styles.input}
+
           outlineColor={Colors.mainColor}
           right={<TextInput.Icon icon="calendar" color={Colors.mainColor} onPress={() => setShowDatePicker(true)} />}
+
         />
         {errors.date && <HelperText type="error">{errors.date}</HelperText>}
 
         {showDatePicker && (
           <DateTimePicker
-            value={date}
+
+
+
+            testID="dateTimePicker"
+            value={date} // This should be a Date object
+
             mode="date"
             display="calendar"
             minimumDate={new Date()}
@@ -188,14 +203,17 @@ export const AddMedicine = () => {
         {/* Image Upload Section */}
         <View style={styles.imagePickerContainer}>
           <TouchableOpacity onPress={handleImagePick} style={styles.imagePicker}>
+
             <Icon name="camera" size={20} color={Colors.mainColor} style={{ marginRight: 10 }} />
             <Button mode="text" color="#43a694">{img ? "Change Image" : "Upload Image"}</Button>
           </TouchableOpacity>
           {img && <Image source={{ uri: img }} style={styles.imagePreview} />}
+
         </View>
         {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
         {/* Submit Button */}
+
         <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
           {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
         </Button>
@@ -203,10 +221,6 @@ export const AddMedicine = () => {
     </PaperProvider>
   );
 };
-
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -240,7 +254,7 @@ const styles = StyleSheet.create({
     fontSize: 66, 
     paddingVertical: 10,
   },
-
+  
   imagePickerContainer: {
     width: "100%",
     alignItems: "center",
@@ -257,7 +271,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
-  imagePreview: {
+  imagePreview:{
     width: 100,
     height: 100,
     borderRadius: 12,
