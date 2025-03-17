@@ -110,15 +110,15 @@ export function Needs() {
             {item.requested && item.examined && item.status && <Text >Accepted</Text>}
             {item.requested && item.examined && !item.status && <Text>Rejected</Text>}
 
-         {!item.examined &&<View style={styles.buttonContainer}>
-              <Button
+            <View style={styles.buttonContainer}>
+            {!item.examined &&  <Button
                 mode="contained"
                 onPress={() => handleUpdateRequest(item)}
                 style={styles.addButton}
                 labelStyle={styles.buttonLabel}
               >
                 Update
-              </Button>
+              </Button>}
               <Button
                 onPress={() =>
                   item.medicine
@@ -129,9 +129,9 @@ export function Needs() {
                 labelStyle={styles.buttonLabel}
               >
                 Delete
-              </Button>
+            
+            </Button>
             </View>
-            }
           </View>
         </View>
         
