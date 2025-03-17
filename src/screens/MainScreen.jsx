@@ -9,6 +9,7 @@ import { Colors } from "../constants/RootColor";
 import { DrawerContent } from "../components/MyDrawer";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { ROLES } from "../hooks/useAuth";
+import { BottomTabBar } from "../components/BottomTabBar";
 
 // Loading component for Suspense
 const LoadingScreen = () => (
@@ -59,6 +60,14 @@ const OffersReview = lazy(() =>
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
+// Wrapper component for screens with BottomTabBar
+const ScreenWithBottomBar = ({ children, navigation }) => (
+  <View style={{ flex: 1 }}>
+    {children}
+    <BottomTabBar navigation={navigation} />
+  </View>
+);
+
 // Main App Stack with Drawer
 const MainAppStack = () => (
   <Drawer.Navigator
@@ -78,73 +87,85 @@ const MainAppStack = () => (
   >
     <Drawer.Screen name="Home">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={Home}
-            allowedRoles={[ROLES.USER, ROLES.DOCTOR]}
-            {...props}
-          />
-        </Suspense>
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={Home}
+              allowedRoles={[ROLES.USER, ROLES.DOCTOR]}
+              {...props}
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="AddMedicine">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={AddMedicine}
-            allowedRoles={[ROLES.USER]}
-            {...props}
-          />
-        </Suspense>
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={AddMedicine}
+              allowedRoles={[ROLES.USER]}
+              {...props}
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="Donations">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={Donations}
-            allowedRoles={[ROLES.USER]}
-            {...props}
-          />
-        </Suspense>
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={Donations}
+              allowedRoles={[ROLES.USER]}
+              {...props}
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="ProfilePage">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={ProfilePage}
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={ProfilePage}
             allowedRoles={[ROLES.USER]}
             {...props}
-          />
-        </Suspense>
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="RequestMedicine">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={RequestMedicine}
-            allowedRoles={[ROLES.USER]}
-            {...props}
-          />
-        </Suspense>
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={RequestMedicine}
+              allowedRoles={[ROLES.USER]}
+              {...props}
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="Needs">
       {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={Needs}
+        <ScreenWithBottomBar navigation={props.navigation}>
+          <Suspense fallback={<LoadingScreen />}>
+            <ProtectedRoute
+              component={Needs}
             allowedRoles={[ROLES.USER]}
             {...props}
-          />
-        </Suspense>
+            />
+          </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
