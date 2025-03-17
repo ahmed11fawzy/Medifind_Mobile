@@ -37,7 +37,7 @@ export function Home() {
       >
         Donate
       </Button>
-      <Text variant="headlineLarge" style={[ {marginTop:"100%"}]} > Available Medicine </Text>
+      <Text variant="headlineLarge" style={[ {marginTop:"20%"}]} > Available Medicine </Text>
 
     </View>
   )
@@ -49,7 +49,7 @@ export function Home() {
       ListHeaderComponent={heroSection}
       renderItem={({ item }) => <RoundedCard medicine={item} />}
       keyExtractor={(item) => item._id}
-      style={{ backgroundColor: "#ffffff" }}
+      style={{ backgroundColor: "#ffffff" , marginTop:-20} }
     />
 
   );
