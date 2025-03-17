@@ -43,7 +43,7 @@ export const orders = coreApi.injectEndpoints({
 
             query: ({ id, body }) => ({
                 url: `orders/${id}`,
-                method: 'PATCH',
+                method: 'PATCH', 
                 body,
                 responseHandler: 'text',
             }),
@@ -56,12 +56,11 @@ export const orders = coreApi.injectEndpoints({
     
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
-              url: 'orders/', 
+              url: `orders/${user_id}`, 
               method: "DELETE",
               headers: {   
                 "Content-Type": "application/json",
-                "req_id": req_id,    
-                "user_id": user_id,  
+                req_id: req_id,    
                 },
             }),
             async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {

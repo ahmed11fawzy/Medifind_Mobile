@@ -26,7 +26,6 @@ export const RoundedCard = ({ medicine }) => {
             const response = await addRequest({
                 user_id: userId,  
                 medicine: medicine?._id, // <-- هنا أيضًا
-                status: true,
             }).unwrap(); 
     
             console.log("✅ Request Added Successfully:", response);
