@@ -1,37 +1,57 @@
+
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Alert,
+import { 
+  View, 
+  StyleSheet, 
+  Image, 
+  TouchableOpacity, 
+  Alert 
 } from "react-native";
+import { Text, TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import { useAddOrderMutation } from "../redux/Slice/order";
+import { useAddOrderMutation,useUpdateOrderMutation } from "../redux/Slice/order";
 import { useUpdateRequestMutation } from "../redux/Slice/request";
 import { useSelector } from "react-redux";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+
+const theme = {
+  colors: {
+    primary: "#00bcd4", // example primary color
+    background: "#ffffff",
+    text: "#333",
+    error: "#D32F2F",
+  },
+};
 
 export const RequestMedicine = () => {
+  // Destructure the passed item from route.params
+  const { item } = useRoute().params || {};
+  const navigation = useNavigation();
+  const userId = useSelector((state) => state.auth.user?.id);
+
+  // Form state
   const [medicineName, setMedicineName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const route = useRoute();
 
-  const item = route.params || {};
-
-  // Get user_id from Redux state
-  const userId = useSelector((state) => state.auth.user?.id);
-
-  // Hooks for adding and updating an order
+  // Mutation hooks
   const [addOrder, { isLoading: isAddingOrder }] = useAddOrderMutation();
   const [updateRequest, { isLoading: isUpdatingRequest }] = useUpdateRequestMutation();
+  const [updateOrder]=useUpdateOrderMutation()
 
+  // Pre-fill the form if an item is passed (update mode)
+  useEffect(() => {
+    if (item && item._id) {
+      setMedicineName(item.req_name || "");
+      setDescription(item.req_description || "");
+      setImage(item.prescription_img || "");
+    }
+  }, [item]);
+
+  // Image picking function
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -39,18 +59,21 @@ export const RequestMedicine = () => {
       aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
   };
 
+  // Upload image to Cloudinary (only if the image is new, i.e. doesn't start with "http")
   const uploadImage = async () => {
     if (!image) {
       Alert.alert("Error", "Please select an image first.");
       return null;
     }
-
+    // If the image is already a URL, assume it's already uploaded.
+    if (image.startsWith("http")) {
+      return image;
+    }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -69,37 +92,36 @@ export const RequestMedicine = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-
       setUploading(false);
-      return response.data.secure_url; // Return the uploaded image URL
+      return response.data.secure_url;
     } catch (error) {
       setUploading(false);
       console.error("Image upload failed:", error);
-      Alert.alert(
-        "Error",
-        "Failed to upload the image. Please try again or contact support if the issue persists."
-      );
+      Alert.alert("Error", "Failed to upload the image. Please try again.");
       return null;
     }
   };
 
-  useEffect(() => {
-    if (item?._id && item.req_name) {
-      setMedicineName(item.req_name);
-    }
-  }, [item]);
-
-  const handleRequestMedicine = async () => {
-    if (!medicineName || !description || !image) {
+  // Validate inputs
+  const validateInputs = () => {
+    let newErrors = {};
+    if (!medicineName.trim()) newErrors.name = "Medicine name is required.";
+    if (!description.trim()) newErrors.description = "Description is required.";
+    if (!image) newErrors.image = "Medicine image is required.";
+    if (Object.keys(newErrors).length > 0) {
       Alert.alert("Error", "Please fill all fields and upload an image.");
-      return;
     }
+    return newErrors;
+  };
 
+  // Submit handler: update if editing, otherwise add new
+  const handleRequestMedicine = async () => {
+    const errors = validateInputs();
+    if (Object.keys(errors).length > 0) return;
     if (!userId) {
       Alert.alert("Error", "User not authenticated. Please login again.");
       return;
     }
-
     try {
       const uploadedImageUrl = await uploadImage();
       if (!uploadedImageUrl) return;
@@ -109,80 +131,86 @@ export const RequestMedicine = () => {
         req_description: description,
         prescription_img: uploadedImageUrl,
         user_id: userId,
+        requested: true,
       };
 
-      if (item._id) {
+      if (item && item._id &&item.medicine) {
+    
         const response = await updateRequest({ id: item._id, body: orderData }).unwrap();
-        console.log("Order updated successfully:", response);
+        console.log("Request updated successfully:", response);
+        Alert.alert("Success", "Medicine updated successfully!");}
+      else if (item && item._id){
+        const response = await updateOrder({ id: item._id, body: orderData }).unwrap();
+        console.log("Request updated successfully:", response);
       } else {
+        // Add new request
         const response = await addOrder(orderData).unwrap();
-        console.log("Order added successfully:", response);
-
+        console.log("Request added successfully:", response);
         Alert.alert(
           "Success",
           `Medicine Requested Successfully!\nName: ${medicineName}\nDescription: ${description}`
         );
       }
-
-      // Reset fields after successful submission
+      // Reset fields and navigate
       setMedicineName("");
       setDescription("");
       setImage(null);
+      navigation.navigate("Needs")
     } catch (error) {
       console.error("Failed to request medicine:", error);
-      Alert.alert(
-        "Error",
-        error.data?.message || "Failed to request medicine. Please try again."
-      );
+      Alert.alert("Error", "Failed to request medicine. Please try again.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Request Medicine</Text>
-      <Icon name="favorite" size={50} color="#00bcd4" style={styles.icon} />
-
-      {/* Medicine Name Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Medicine Name"
-          value={medicineName}
-          onChangeText={(text) => setMedicineName(text)}
-        />
-      </View>
-
-      {/* Description Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Description"
-          value={description}
-          onChangeText={(text) => setDescription(text)}
-          multiline
-        />
-      </View>
-
-      {/* Selected Image Preview */}
-      {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
-
-      {/* Upload Image Button */}
-      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-        <Icon name="photo-camera" size={24} color="#00bcd4" />
-        <Text style={styles.uploadButtonText}>Select Image</Text>
-      </TouchableOpacity>
-
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={[styles.submitButton, isAddingOrder && styles.disabledButton]}
-        onPress={handleRequestMedicine}
-        disabled={isAddingOrder}
-      >
-        <Text style={styles.submitButtonText}>
-          {isAddingOrder ? "Submitting..." : "Request Medicine"}
+    <PaperProvider theme={theme}>
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          {item && item._id ? "Update Medicine" : "Request Medicine"}
         </Text>
-      </TouchableOpacity>
-    </View>
+        <Icon name="favorite" size={50} color="#00bcd4" style={styles.icon} />
+
+        {/* Medicine Name Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Medicine Name"
+            value={medicineName}
+            onChangeText={setMedicineName}
+          />
+        </View>
+
+        {/* Description Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Description"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
+        </View>
+
+        {/* Selected Image Preview */}
+        {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
+
+        {/* Upload Image Button */}
+        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+          <Icon name="photo-camera" size={24} color="#00bcd4" />
+          <Text style={styles.uploadButtonText}>Select Image</Text>
+        </TouchableOpacity>
+
+        {/* Submit Button */}
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleRequestMedicine}
+        >
+          <Text style={styles.submitButtonText}>
+            {isAddingOrder ? "Submitting..." : item && item._id ? "Update Medicine" : "Request Medicine"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </PaperProvider>
   );
 };
 
@@ -259,3 +287,5 @@ const styles = StyleSheet.create({
     borderRadius: 200,
   },
 });
+
+export default RequestMedicine;
