@@ -9,22 +9,28 @@ import {
 } from "react-native";
 import { Button, Surface } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+
 import { useGetOrderQuery, useDeleteOrderMutation, useUpdateOrderMutation } from "../redux/Slice/order";
 import { useGetUserRequestsQuery, useUpdateRequestMutation, useDeleteRequestMutation } from "../redux/Slice/request";
 import { useAuth } from "../hooks/useAuth";
+
 import { ScrollView } from "react-native-web";
+
 
 export function Needs() {
   const { userId } = useAuth();
+
   const navigation = useNavigation();
 
   // Fetch orders and requests from API
   const { data: requestsData } = useGetUserRequestsQuery(userId);
   const { data: ordersData } = useGetOrderQuery(userId);
 
+
   // Mutation hooks
   const [updateRequest] = useUpdateRequestMutation();
   const [updateOrder] = useUpdateOrderMutation();
+
   const [deleteRequest] = useDeleteRequestMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
@@ -148,12 +154,14 @@ export function Needs() {
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.container}
+
     />
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+
     paddingVertical: 20,
     paddingHorizontal:5
   },
@@ -191,44 +199,71 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginHorizontal: 10,
     overflow: "hidden",
+
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  contentContainer: {
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  noOrdersText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#666",
+
+  },
+  orderItem: {
     flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
   },
+
   image: {
     width: 100,
     height: "100%",
     resizeMode: "cover",
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
+
   },
-  details: {
+  textContainer: {
     flex: 1,
-    justifyContent: "space-between",
-    padding: 16,
   },
-  row: {
-    flexDirection: "row",
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  label: {
+  orderTitle: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginRight: 8,
-    fontSize: 16,
   },
-  value: {
-    fontSize: 16,
-    flex: 1,
+  orderDescription: {
+    fontSize: 14,
+    color: "#666",
   },
   buttonContainer: {
     flexDirection: "row",
+
     marginTop: 8,
     justifyContent: "space-between",
   },
   addButton: {
     backgroundColor: "#0fd78a",
     width: "48%",
+
   },
   checkoutButton: {
     backgroundColor: "#00bcd4",
@@ -237,6 +272,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   deleteButton: {
+
     backgroundColor: "#e64e67",
     width: "48%",
     marginLeft: 8,

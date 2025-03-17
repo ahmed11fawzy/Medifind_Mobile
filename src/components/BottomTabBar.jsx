@@ -1,4 +1,4 @@
-// components/BottomTabBar.js
+
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -7,44 +7,37 @@ import { DrawerActions } from "@react-navigation/native";
 export const BottomTabBar = ({ navigation }) => {
   const route = useRoute();
 
-  // تحديد الصفحة النشطة
   const getActiveState = (routeName) => {
     return route.name === routeName ? "#00bcd4" : "#333";
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
-        onPress={() => navigation.navigate("Home")}
+      <TouchableOpacity
+        onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
         style={styles.tabButton}
       >
-        <Ionicons 
-          name="home" 
-          size={24} 
-          color={getActiveState("Home")} 
-        />
+        <Ionicons name="menu" size={24} color="#333" />
       </TouchableOpacity>
-      <TouchableOpacity 
+
+      <TouchableOpacity
         onPress={() => navigation.navigate("AddMedicine")}
         style={styles.centerButton}
       >
         <View style={styles.circle}>
-          <Ionicons 
-            name="add" 
-            size={32} 
+          <Ionicons
+            name="add"
+            size={32}
             color={getActiveState("AddMedicine") ? "white" : "white"}
           />
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
-        onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Home")}
         style={styles.tabButton}
       >
-        <Ionicons 
-          name="menu" 
-          size={24} 
-          color="#333" 
-        />
+        <Ionicons name="home" size={24} color={getActiveState("Home")} />
       </TouchableOpacity>
     </View>
   );
