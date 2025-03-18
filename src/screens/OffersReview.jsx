@@ -10,12 +10,11 @@ import { Text, ActivityIndicator, Snackbar, Button } from "react-native-paper";
 import {
   useGetAllMedicinesQuery,
   useUpdateMedicineMutation,
-  useDeleteMedicineMutation,
 } from "../redux/Slice/medicine";
 import MedicineCard from "../components/MedicineCard";
 
 export const OffersReview = () => {
-  // Get medicines data using the query from your slice
+  // Fetch medicines
   const {
     data: medicines,
     isLoading,
@@ -24,20 +23,14 @@ export const OffersReview = () => {
     refetch,
   } = useGetAllMedicinesQuery();
 
-  // Add debugging logs
-  console.log('Medicines data:', medicines);
-  console.log('Is loading:', isLoading);
-  console.log('Is error:', isError);
-  console.log('Error:', error);
-
-  // Mutations for adding/accepting and deleting medicines
+  // Mutations
   const [updateMedicine] = useUpdateMedicineMutation();
-  const [deleteMedicine] = useDeleteMedicineMutation();
 
   // State for handling refresh and feedback
   const [refreshing, setRefreshing] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  
 
   // Handle refresh action
   const handleRefresh = async () => {
@@ -46,12 +39,13 @@ export const OffersReview = () => {
     setRefreshing(false);
   };
 
-  // Handle add/accept medicine
+  // Handle accept medicine
   const handleAdd = async (medicine) => {
     try {
       await updateMedicine({
-        medicine_id: medicine.id,
-        status: "accepted",
+        id: medicine, 
+        examine: true,
+        status: true,
       });
 
       showSnackbar("Medicine added successfully");
@@ -61,12 +55,13 @@ export const OffersReview = () => {
     }
   };
 
-  // Handle delete medicine
+  // Handle reject medicine
   const handleDelete = async (medicine) => {
     try {
-      await deleteMedicine({
-        user_id: medicine.userId,
-        medicine_id: medicine.id,
+      await updateMedicine({
+        id: medicine,
+        examine: true,
+        status: false,
       });
 
       showSnackbar("Medicine deleted successfully");
@@ -95,19 +90,7 @@ export const OffersReview = () => {
       </View>
     );
   }
-
-  // Error state
-  if (isError) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Error loading medicines: {error?.data?.message || error?.error || 'Unknown error'}</Text>
-        <Button onPress={refetch}>Retry</Button>
-      </View>
-    );
-  }
-
-  // No data state
-  if (!medicines || !Array.isArray(medicines?.data || medicines)) {
+  if(medicines.length === 0){
     return (
       <View style={styles.centerContainer}>
         <Text>No medicines available</Text>
@@ -115,26 +98,43 @@ export const OffersReview = () => {
     );
   }
 
+  // Error state
+  if (isError) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>
+          Error loading medicines:{" "}
+          {error?.data?.message || error?.error || "Unknown error"}
+        </Text>
+        <Button onPress={refetch}>Retry</Button>
+      </View>
+    );
+  }
+
+  // No data state
   const medicineData = medicines?.data || medicines;
+  if (!medicineData || !Array.isArray(medicineData)) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>No medicines available</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-     
-
       <FlatList
         data={medicineData}
         keyExtractor={(item) => item._id?.toString()}
-        renderItem={({ item }) => {
-          if (!item.examine) {
-            return (
-              <MedicineCard
-            medicine={item}
-            onAdd={() => handleAdd(item)}
-            onDelete={() => handleDelete(item)}
-          />
-            )
-          }
-        }}
+        renderItem={({ item }) =>
+          !item.examine ? (
+            <MedicineCard
+              medicine={item}
+              onAdd={() => handleAdd(item._id)}
+              onDelete={() => handleDelete(item._id)}
+            />
+          ) : null
+        }
         refreshing={refreshing}
         onRefresh={handleRefresh}
         contentContainerStyle={styles.listContent}
@@ -167,14 +167,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    margin: 16,
-    textAlign: "center",
-  },
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
 });
+

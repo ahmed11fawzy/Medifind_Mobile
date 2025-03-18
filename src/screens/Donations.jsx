@@ -77,9 +77,10 @@ export function Donations() {
 // Styles
 const styles = StyleSheet.create({
   container: {
-    marginTop: 30,
+    marginTop: 5,
     paddingVertical: 20,
     alignItems: "center",
+    // marginBottom: 30,
   },
   cardContainer: {
     flexDirection: "row",

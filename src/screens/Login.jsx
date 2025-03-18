@@ -101,7 +101,7 @@ export default function Login({ navigation }) {
     }
 
     return (
-        <View style={[styles.container, { marginTop: 30 }]}>
+        <View style={[styles.container, { paddingTop: 50 }]}>
             <View style={{ flexDirection: 'row', paddingBottom: 0 }} >
                 <Text style={{ fontSize: 25, fontWeight: 'bold' }}>Login</Text>
                 <Entypo name='user' size={18} style={{ marginInlineStart: "10", marginTop: "10" }} />

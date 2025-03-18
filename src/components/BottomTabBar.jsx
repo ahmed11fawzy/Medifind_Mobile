@@ -1,15 +1,36 @@
-
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Keyboard, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { DrawerActions } from "@react-navigation/native";
+import { useEffect, useState } from "react";
 
 export const BottomTabBar = ({ navigation }) => {
   const route = useRoute();
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
 
   const getActiveState = (routeName) => {
     return route.name === routeName ? "#00bcd4" : "#333";
   };
+
+  if (isKeyboardVisible) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -28,7 +49,7 @@ export const BottomTabBar = ({ navigation }) => {
           <Ionicons
             name="add"
             size={32}
-            color={getActiveState("AddMedicine") ? "white" : "white"}
+            color="white"
           />
         </View>
       </TouchableOpacity>
@@ -56,6 +77,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 999,
+    elevation: Platform.OS === 'android' ? 8 : 0,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   tabButton: {
     flex: 1,
@@ -76,5 +106,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
