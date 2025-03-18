@@ -4,12 +4,13 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Provider as PaperProvider } from "react-native-paper";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import { Colors } from "../constants/RootColor";
 import { DrawerContent } from "../components/MyDrawer";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { ROLES } from "../hooks/useAuth";
 import { BottomTabBar } from "../components/BottomTabBar";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 // Loading component for Suspense
 const LoadingScreen = () => (
@@ -44,9 +45,6 @@ const RequestMedicine = lazy(() =>
 const Needs = lazy(() =>
   import("./Needs").then((module) => ({ default: module.Needs }))
 );
-const Update = lazy(() =>
-  import("./Update").then((module) => ({ default: module.Update }))
-);
 const RequestsReview = lazy(() =>
   import("./RequestsReview").then((module) => ({
     default: module.RequestsReview,
@@ -72,8 +70,22 @@ const ScreenWithBottomBar = ({ children, navigation }) => (
 const MainAppStack = () => (
   <Drawer.Navigator
     drawerContent={(props) => <DrawerContent {...props} />}
-    screenOptions={{
-      headerShown: false,
+    screenOptions={({ navigation }) => ({
+      headerShown: true,
+      headerStyle: {
+        backgroundColor: Colors.mainColor,
+        elevation: 0,
+        shadowOpacity: 0,
+      },
+      headerTintColor: '#fff',
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: 16 }}
+        >
+          <Icon name="arrow-left" size={20} color="#fff" style={{marginRight: 10}}/>
+        </TouchableOpacity>
+      ),
       drawerStyle: {
         width: "80%",
       },
@@ -83,9 +95,14 @@ const MainAppStack = () => (
       swipeEnabled: true,
       animationEnabled: true,
       detachInactiveScreens: false,
-    }}
+    })}
   >
-    <Drawer.Screen name="Home">
+    <Drawer.Screen 
+      name="Home"
+      options={{
+        headerLeft: () => null // Remove back button for Home screen
+      }}
+    >
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
@@ -99,7 +116,12 @@ const MainAppStack = () => (
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="AddMedicine">
+    <Drawer.Screen 
+      name="AddMedicine"
+      options={{
+        title: "Add Medicine"
+      }}
+    >
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
@@ -113,7 +135,12 @@ const MainAppStack = () => (
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="Donations">
+    <Drawer.Screen 
+      name="Donations"
+      options={{
+        title: "Donations"
+      }}
+    >
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
@@ -127,21 +154,31 @@ const MainAppStack = () => (
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="ProfilePage">
+    <Drawer.Screen 
+      name="ProfilePage"
+      options={{
+        title: "Profile"
+      }}
+    >
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
             <ProtectedRoute
               component={ProfilePage}
-            allowedRoles={[ROLES.USER]}
-            {...props}
+              allowedRoles={[ROLES.USER]}
+              {...props}
             />
           </Suspense>
         </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="RequestMedicine">
+    <Drawer.Screen 
+      name="RequestMedicine"
+      options={{
+        title: "Request Medicine"
+      }}
+    >
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
@@ -169,17 +206,6 @@ const MainAppStack = () => (
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="Update">
-      {(props) => (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProtectedRoute
-            component={Update}
-            allowedRoles={[ROLES.USER]}
-            {...props}
-          />
-        </Suspense>
-      )}
-    </Drawer.Screen>
 
     <Drawer.Screen name="RequestsReview">
       {(props) => (
@@ -214,13 +240,26 @@ const MainScreen = () => {
         <Stack.Navigator
           initialRouteName="Login"
           screenOptions={{
-            headerShown: false,
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: Colors.mainColor,
+              elevation: 0,
+              shadowOpacity: 0,
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
             gestureEnabled: false,
           }}
         >
-
           {/* Auth Screens */}
-          <Stack.Screen name="Login">
+          <Stack.Screen 
+            name="Login" 
+            options={{ 
+              headerShown: false 
+            }}
+          >
             {(props) => (
               <Suspense fallback={<LoadingScreen />}>
                 <Login {...props} />
@@ -228,17 +267,26 @@ const MainScreen = () => {
             )}
           </Stack.Screen>
 
-          <Stack.Screen name="RegisterPage">
+          <Stack.Screen 
+            name="RegisterPage"
+            options={{ 
+              title: "Register",
+              headerShown: false
+            }}
+          >
             {(props) => (
               <Suspense fallback={<LoadingScreen />}>
                 <RegisterPage {...props} />
               </Suspense>
-
             )}
           </Stack.Screen>
 
           {/* Main App Stack */}
-          <Stack.Screen name="MainApp" component={MainAppStack} />
+          <Stack.Screen 
+            name="MainApp" 
+            component={MainAppStack}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>

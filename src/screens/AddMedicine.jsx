@@ -1,7 +1,6 @@
-
 import Icon from "react-native-vector-icons/FontAwesome5";
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 
 import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -141,24 +140,34 @@ export const AddMedicine = () => {
 
   return (
     <PaperProvider theme={theme}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
 
-        <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
+              <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
+            </View>
 
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
-        </View>
-
-        {/* Medicine Name Input */}
-        <TextInput
-          label="Medicine Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={styles.input}
-          outlineColor={Colors.mainColor}
-        />
-        {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+            {/* Medicine Name Input */}
+            <TextInput
+              label="Medicine Name"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              outlineColor={Colors.mainColor}
+            />
+            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
 
         {/* Expire Date Input */}
         <TextInput
@@ -189,16 +198,16 @@ export const AddMedicine = () => {
           />
         )}
 
-        {/* Medicine Concentration Input */}
-        <TextInput
-          label="Medicine Concentration"
-          value={concentration}
-          onChangeText={setConcentration}
-          mode="outlined"
-          outlineColor={Colors.mainColor}
-          style={styles.input}
-        />
-        {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
+            {/* Medicine Concentration Input */}
+            <TextInput
+              label="Medicine Concentration"
+              value={concentration}
+              onChangeText={setConcentration}
+              mode="outlined"
+              outlineColor={Colors.mainColor}
+              style={styles.input}
+            />
+            {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
         {/* Image Upload Section */}
         <View style={styles.imagePickerContainer}>
@@ -212,12 +221,19 @@ export const AddMedicine = () => {
         </View>
         {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
-        {/* Submit Button */}
-
-        <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
-          {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
-        </Button>
-      </View>
+            {/* Submit Button */}
+            <Button 
+              style={styles.button} 
+              textColor="white" 
+              mode="contained" 
+              loading={isLoading || isUploading} 
+              onPress={handleSubmit}
+            >
+              {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
+            </Button>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </PaperProvider>
   );
 };
@@ -225,11 +241,16 @@ export const AddMedicine = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
     backgroundColor: "#ffffff",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    justifyContent: "center",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    // width: "100%",
+    // paddingBottom: Platform.OS === 'ios' ? 120 : 90,
+    justifyContent: "center",
   },
   title: {
     fontSize: 24,
@@ -237,6 +258,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     color: Colors.mainColor,
     fontFamily: "Georgia",
+    textAlign: "center",
   },
   input: {
     marginBottom: 12,
@@ -251,10 +273,10 @@ const styles = StyleSheet.create({
     width: "60%",
     borderRadius: 12,
     alignSelf: "center",
-    fontSize: 66, 
+    fontSize: 66,
     paddingVertical: 10,
+    marginBottom: 20,
   },
-  
   imagePickerContainer: {
     width: "100%",
     alignItems: "center",
@@ -271,7 +293,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
-  imagePreview:{
+  imagePreview: {
     width: 100,
     height: 100,
     borderRadius: 12,
