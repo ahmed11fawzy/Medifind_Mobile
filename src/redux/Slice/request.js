@@ -57,10 +57,14 @@ export const request = coreApi.injectEndpoints({
         }),
         
       deleteRequest: build.mutation({
-        query: (id) => ({
-            url: `request/${id}`,
+        query: ({req_id,user_id}) => ({
+            url: `request/${user_id}`,
             method: "DELETE",
             responseHandler: "text",
+            headers: {
+                "Content-Type": "application/json",
+                  req_id:req_id,
+            }
         }),
         invalidatesTags: ["Request"], // Invalidate cache to refetch updated data
     }),

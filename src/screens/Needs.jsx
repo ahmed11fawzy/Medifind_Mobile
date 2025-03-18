@@ -1,192 +1,250 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Image, 
+  FlatList, 
+  Alert ,
+} from "react-native";
+import { Button, Surface } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import { useGetOrderQuery, useDeleteOrderMutation, useUpdateOrderMutation } from "../redux/Slice/order";
-import { useAddRequestMutation } from "../redux/Slice/request";
+import { useGetUserRequestsQuery, useUpdateRequestMutation, useDeleteRequestMutation } from "../redux/Slice/request";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import { useGetUserRequestsQuery } from "../redux/Slice/request";
-import { useDeleteRequestMutation } from "../redux/Slice/request";
-import { Surface, Button } from "react-native-paper";
-import { MyButton } from "../components/MyButton";
+import { ScrollView } from "react-native-web";
 
-export const Needs = () => {
+export function Needs() {
   const { userId } = useAuth();
-  const { data: orders, isLoading: isOrdersLoading, error: ordersError, refetch: refetchOrders } = useGetOrderQuery(userId);
-  const { data: requests, isLoading: isRequestsLoading, error: requestsError, refetch: refetchRequests } = useGetUserRequestsQuery(userId);
-
-  const [deleteOrderMutation] = useDeleteOrderMutation();
-  const [updateOrder] = useUpdateOrderMutation();
-  const [userOrders, setUserOrders] = useState([]);
   const navigation = useNavigation();
-  const route = useRoute();
-  const selectedMedicine = route.params?.selectedMedicine;
-  const [addRequestMutation] = useAddRequestMutation();
-  const [deleteRequestMutation] = useDeleteRequestMutation();
+
+  // Fetch orders and requests from API
+  const { data: requestsData } = useGetUserRequestsQuery(userId);
+  const { data: ordersData } = useGetOrderQuery(userId);
+
+  // Mutation hooks
+  const [updateRequest] = useUpdateRequestMutation();
+  const [updateOrder] = useUpdateOrderMutation();
+  const [deleteRequest] = useDeleteRequestMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
+
+  // Local state for orders and requests (renamed to avoid conflicts)
+  const [requestsList, setRequestsList] = useState([]);
+  const [ordersList, setOrdersList] = useState([]);
 
   useEffect(() => {
-    if (orders && Array.isArray(orders.data)) {
-      // Handle orders data
+    if (requestsData) {
+      setRequestsList(requestsData.data);
     }
-  
-    if (requests && Array.isArray(requests.data)) {
-      // Handle requests data
+    if (ordersData) {
+      setOrdersList(ordersData.data);
     }
-  
-    setUserOrders([
-      ...(orders?.data || []), 
-      ...(requests?.data || [])
-    ]);
-  
-  }, [orders, requests]);
+  }, [requestsData, ordersData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refetchOrders();  
-      refetchRequests();
-    }, [refetchOrders, refetchRequests])
-  );
-
-  if (isRequestsLoading || isOrdersLoading) {
-    return <ActivityIndicator size="large" color="#007bff" style={styles.loader} />;
-  }
-
-  if (requestsError || ordersError) {
-    return <Text style={styles.errorText}>Error loading requests</Text>;
-  }
-
-  const handleCheckout = (item) => {
-    navigation.navigate("AddMedicine", { selectedRequest: item });
+  // Handle update navigation for a request/order item
+  const handleUpdateRequest = async (item) => {
+    navigation.navigate("RequestMedicine", { item, itemId: item._id, medicineId: item.medicine });
   };
 
-  const handleUpdate = (orderId) => {
-    navigation.navigate("Update", { orderId });
-  };
-
-  const handleDelete = async (orderId) => {
+  // Handle delete for requests/orders
+  const handleDelete = async ({ req_id, user_id, medicine }) => {
     try {
-      const response = await deleteOrderMutation({
-        req_id: orderId,     
-        user_id: userId       
-      }).unwrap();
-    } catch (error) {
-      console.error("❌ Delete failed:", error);
+      if (medicine) {
+        await deleteRequest({ req_id, user_id }).unwrap();
+        setRequestsList((prev) => prev.filter((req) => req._id !== req_id));
+        Alert.alert("Success", "Request deleted successfully!");
+      } else {
+        await deleteOrder({ req_id, user_id }).unwrap();
+        setOrdersList((prev) => prev.filter((order) => order._id !== req_id));
+        Alert.alert("Success", "Order deleted successfully!");
+      }
+    } catch (error) { 
+      console.error("Delete Error:", error);
+      Alert.alert("Error", "Failed to delete item.");
     }
   };
 
-  return (
-    <FlatList
-      data={[...(userOrders || []), ...(requests?.data || [])]}
-      keyExtractor={(item) => item._id?.toString() || item.id?.toString() || Math.random().toString()}
-      renderItem={({ item }) => (
-        <View style={styles.orderItem}>
-          {item.prescription_img ? (
-            <Image source={{ uri: item.prescription_img }} style={styles.orderImage} />
-          ) : item.medicine?.image_path ? ( 
-            <Image source={{ uri: item.medicine.image_path }} style={styles.orderImage} />
-          ) : null}
-          <View style={styles.textContainer}>
-            <Text style={styles.orderTitle}>{item.req_name || item.medicine?.name}</Text>
-            <Text style={styles.orderDescription}>
-              {item.req_description || `Expire Date: ${item.medicine?.expire_date}`}
-            </Text>
-            <Text>Status: {item.status || "Pending"}</Text>
+  // Render each item with conditional styling based on examined and status
+  const renderItem = ({ item }) => {
+    let cardStyle = styles.card; // default style
+    if (item.examined === true && item.status === true) {
+      cardStyle = styles.cardAccepted;
+    } else if (item.examined === true && item.status === false) {
+      cardStyle = styles.cardRejected;
+    }
+     else if (item.requested === true ) {
+      cardStyle = styles.cardWaiting;
+    }
+
+    return (
+      <Surface style={cardStyle}>
+    
+        <View style={styles.contentContainer}>
+          <Image
+            source={{
+              uri: item.prescription_img || (item.medicine && item.medicine.image_path),
+            }}
+            style={styles.image}
+          />
+          <View style={styles.details}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Name:</Text>
+              <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+                {item.req_name || (item.medicine && item.medicine.name)}
+              </Text>
+            </View>
+
+            {!item.requested && !item.examined && !item.status && (
+              <Button
+                mode="contained"
+                onPress={() => handleUpdateRequest(item)}
+                style={styles.checkoutButton}
+                labelStyle={styles.buttonLabel}
+              >
+                CheckOut
+              </Button>
+            )}
+            {item.requested && !item.examined && !item.status && (
+              <Text>Waiting for approval</Text>
+            )}
+            {item.requested && item.examined && item.status && <Text >Accepted</Text>}
+            {item.requested && item.examined && !item.status && <Text>Rejected</Text>}
+
             <View style={styles.buttonContainer}>
-              {item.prescription_img ? (
-                <>
-                  <MyButton title="Update" onPress={() => handleUpdate(item._id)}/>
-                  <MyButton title="Delete" onPress={() => handleDelete(item._id)}/>
-                </>
-              ) : (
-                <MyButton title="Checkout"onPress={() => handleCheckout(item)}/>
-              )}
+            {!item.examined &&  <Button
+                mode="contained"
+                onPress={() => handleUpdateRequest(item)}
+                style={styles.addButton}
+                labelStyle={styles.buttonLabel}
+              >
+                Update
+              </Button>}
+              <Button
+                onPress={() =>
+                  item.medicine
+                    ? handleDelete({ req_id: item._id, user_id: userId, medicine: item.medicine })
+                    : handleDelete({ req_id: item._id, user_id: userId })
+                }
+                style={styles.deleteButton}
+                labelStyle={styles.buttonLabel}
+              >
+                Delete
+            
+            </Button>
             </View>
           </View>
         </View>
-      )}
+        
+      </Surface>
+    );
+  };
+
+  // Combine orders and requests for rendering
+  const combinedData = [...ordersList, ...requestsList];
+
+  return (
+    <FlatList
+      data={combinedData}
+      renderItem={renderItem}
+      keyExtractor={(item) => item._id}
+      contentContainerStyle={styles.container}
     />
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+    paddingVertical: 20,
+    paddingHorizontal:5
   },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  card: {
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#e8efed", // default color
+    elevation: 2,
+    marginHorizontal: 10,
+    overflow: "hidden",
+    
   },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginTop: 20,
+  cardAccepted: {
+    marginVertical: 10,
+    borderRadius: 8,
+    // backgroundColor: "#93f1d8",
+    backgroundColor: "#93f1cd",
+    elevation: 2,
+    marginHorizontal: 10,
+    overflow: "hidden",
   },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
+  cardRejected: {
+    marginVertical: 10,
+    borderRadius: 8,
+    // backgroundColor: "#f19399",
+    backgroundColor: "#efa6ab",
+    elevation: 2,
+    marginHorizontal: 10,
+    overflow: "hidden",
   },
-  noOrdersText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#666",
+  cardWaiting: {
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#c6cbc9",
+    elevation: 2,
+    marginHorizontal: 10,
+    overflow: "hidden",
   },
-  orderItem: {
+  contentContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
   },
-  orderImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-    marginRight: 10,
+  image: {
+    width: 100,
+    height: "100%",
+    resizeMode: "cover",
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
   },
-  textContainer: {
+  details: {
     flex: 1,
+    justifyContent: "space-between",
+    padding: 16,
   },
-  orderTitle: {
-    fontSize: 16,
+  row: {
+    flexDirection: "row",
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  label: {
     fontWeight: "bold",
+    marginRight: 8,
+    fontSize: 16,
   },
-  orderDescription: {
-    fontSize: 14,
-    color: "#666",
+  value: {
+    fontSize: 16,
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: "row",
-    marginTop: 10,
+    marginTop: 8,
+    justifyContent: "space-between",
   },
-  updateButton: {
-    backgroundColor: "#007bff",
-    padding: 8,
-    borderRadius: 5,
-    marginRight: 10,
+  addButton: {
+    backgroundColor: "#0fd78a",
+    width: "48%",
+  },
+  checkoutButton: {
+    backgroundColor: "#00bcd4",
+    width: "95%",
+    marginTop: 5,
+    marginHorizontal: 4,
   },
   deleteButton: {
-    backgroundColor: "red",
-    padding: 8,
-    borderRadius: 5,
+    backgroundColor: "#e64e67",
+    width: "48%",
+    marginLeft: 8,
   },
-  buttonText: {
-    color: "#fff",
+  buttonLabel: {
     fontSize: 14,
-    textAlign: "center",
-  },
-  selectedMedicineCard: {
-    backgroundColor: "#f9f9f9",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    color: "white",
   },
 });
 
-
+export default Needs;

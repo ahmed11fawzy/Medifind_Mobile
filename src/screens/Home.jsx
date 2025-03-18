@@ -20,12 +20,12 @@ export function Home() {
   }
   const { data: acceptedMedicines, isLoading, isError, error } = useGetAcceptedMedicinesQuery();
   const heroSection = () => (
-    <View style={[Styles.container, { marginVertical: '50' }]}>
+    <View style={[Styles.container, { marginVertical: '40%' }]}>
       <Image
         source={require('../../assets/gift-box.png')}
-        style={{ width: 300, height: 280 }}
+        style={{ width: 300, height: 280, marginVertical: 50 }}
       ></Image>
-      <Text variant="headlineMedium">
+      <Text variant="headlineSmall">
         <Text style={{ color: Colors.mainColor, display: 'block', marginInlineEnd: '10' }} >Give</Text>
         <Text>the Gift of Health: Donate</Text>
         <Text style={{ color: Colors.mainColor }} >Medicine</Text> Today !
@@ -33,11 +33,11 @@ export function Home() {
       <Text variant="titleSmall" style={{ color: Colors.secondaryColor }} >
         Every donated pill is a beacon of hope for someone in need.
       </Text>
-      <Button style={[Style.width50, Styles.mY]} mode="elevated" textColor={Colors.baseColor} buttonColor={Colors.mainColor} onPress={() => navigation.navigate("AddMedicine")}
+      <Button style={[Style.width50, { marginTop: 20 }]} mode="elevated" textColor={Colors.baseColor} buttonColor={Colors.mainColor} onPress={() => navigation.navigate("AddMedicine")}
       >
         Donate
       </Button>
-      <Text variant="headlineLarge" style={[Styles.mY]} > Available Medicine </Text>
+      <Text variant="headlineLarge" style={[ {marginTop:"20%"}]} > Available Medicine </Text>
 
     </View>
   )
@@ -49,7 +49,7 @@ export function Home() {
       ListHeaderComponent={heroSection}
       renderItem={({ item }) => <RoundedCard medicine={item} />}
       keyExtractor={(item) => item._id}
-      style={{ backgroundColor: "#ffffff" }}
+      style={{ backgroundColor: "#ffffff" , marginTop:-20} }
     />
 
   );
