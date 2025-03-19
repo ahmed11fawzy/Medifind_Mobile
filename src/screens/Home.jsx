@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Image } from "react-native";
+import { StyleSheet, View, Image ,ScrollView } from "react-native";
 import { Button, Text, } from 'react-native-paper';
 import { Colors } from '../constants/RootColor'
 import { Styles } from '../constants/mainStyle'
@@ -8,22 +8,19 @@ import { useGetAcceptedMedicinesQuery } from "../redux/Slice/medicine"
 import { RoundedCard } from "../Component/roundedCard";
 import { useAuth } from '../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
+import MedicineDonationCard from '../Component/MedicineDonationCard';
 
 export function Home() {
   const { isAuthenticated, userId, tokenData, userRole } = useAuth();
   const navigation = useNavigation();
 
-  if (isAuthenticated) {
-    console.log(userId);
-    console.log(tokenData);
-    console.log(userRole);
-  }
+
   const { data: acceptedMedicines, isLoading, isError, error } = useGetAcceptedMedicinesQuery();
-  const heroSection = () => (
-    <View style={[Styles.container, { marginVertical: '40%' }]}>
+  const HeroSection = () => (
+    <View style={[Styles.container,{ marginVertical: '20%' }]}>
       <Image
         source={require('../../assets/gift-box.png')}
-        style={{ width: 300, height: 280, marginVertical: 50 }}
+        style={{ width: 300, height: 280, marginVertical: 10 }}
       ></Image>
       <Text variant="headlineSmall">
         <Text style={{ color: Colors.mainColor, display: 'block', marginInlineEnd: '10' }} >Give</Text>
@@ -37,26 +34,41 @@ export function Home() {
       >
         Donate
       </Button>
-      <Text variant="headlineLarge" style={[ {marginTop:"20%"}]} > Available Medicine </Text>
-
     </View>
   )
 
-  return (
+  const SectionTitle=()=> (
+    <Text variant="headlineMedium" style={[ {marginTop:"10%" ,marginBottom:40}]} > Available Medicine </Text>
+  )
+  
+  const handleDonation = () => {
+    // Handle donation logic here
+    console.log('Donation clicked');
+  };
 
+  return (
     <FlatList
       data={acceptedMedicines?.data}
-      ListHeaderComponent={heroSection}
-      renderItem={({ item }) => <RoundedCard medicine={item} />}
+      ListHeaderComponent={
+        <>
+          <HeroSection />
+          <SectionTitle />
+          
+        </>
+      }
+      renderItem={({ item }) => <MedicineDonationCard medicine={item} />}
       keyExtractor={(item) => item._id}
-      style={{ backgroundColor: "#ffffff" , marginTop:-20} }
+      style={{ backgroundColor: "#ffffff" ,marginBottom:80  }}
+      contentContainerStyle={{ paddingTop: 20 }}
     />
-
   );
 }
 
 
 const Style = StyleSheet.create({
+  container :{
+    flex:1,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',

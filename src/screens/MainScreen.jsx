@@ -209,6 +209,7 @@ const MainAppStack = () => (
 
     <Drawer.Screen name="RequestsReview">
       {(props) => (
+        <ScreenWithBottomBar navigation={props.navigation}>
         <Suspense fallback={<LoadingScreen />}>
           <ProtectedRoute
             component={RequestsReview}
@@ -216,11 +217,13 @@ const MainAppStack = () => (
             {...props}
           />
         </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
 
     <Drawer.Screen name="OffersReview">
       {(props) => (
+        <ScreenWithBottomBar navigation={props.navigation}>
         <Suspense fallback={<LoadingScreen />}>
           <ProtectedRoute
             component={OffersReview}
@@ -228,6 +231,7 @@ const MainAppStack = () => (
             {...props}
           />
         </Suspense>
+        </ScreenWithBottomBar>
       )}
     </Drawer.Screen>
   </Drawer.Navigator>
