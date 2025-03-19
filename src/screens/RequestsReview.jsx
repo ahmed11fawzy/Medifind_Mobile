@@ -160,9 +160,9 @@ export function RequestsReview() {
 // Styles
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    width: '90%',
-    marginHorizontal: '5%',
+    // alignItems: 'center',
+    width: '80%',
+    marginHorizontal: '10%',
     paddingVertical: 20,
     backgroundColor: '#f5f5f5',
     flex: 1,
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 15,
+    marginHorizontal:80,
     color: '#8989899',
     fontFamily: 'serif',
   },
@@ -208,6 +209,7 @@ const styles = StyleSheet.create({
   
   iconContainer: {
     marginBottom: 15,
+    marginHorizontal:120
   },
   card: {
     width: '100%',
