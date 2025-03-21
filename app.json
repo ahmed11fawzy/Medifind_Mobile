@@ -4,7 +4,7 @@
     "slug": "",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.jpg",
+    "icon": "./assets/logo.jpeg",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/doctor.jpeg",
