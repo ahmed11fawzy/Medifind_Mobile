@@ -13,7 +13,7 @@ import { useGetUserByIdQuery } from "../redux/Slice/user";
 import { CommonActions } from "@react-navigation/native";
 
 export const DrawerContent = (props) => {
-  const { user, userId, logout } = useAuth();
+  const { userRole,user, userId, logout } = useAuth();
   const currentRoute = props.state?.routeNames[props.state?.index] || "";
 
   const { data: userData, isLoading: isLoadingUser } =
@@ -56,14 +56,14 @@ export const DrawerContent = (props) => {
               <Text style={styles.email}>{userDisplayData?.email}</Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => props.navigation.closeDrawer()}>
+          {/* <TouchableOpacity onPress={() => props.navigation.closeDrawer()}>
             <Ionicons name="close" size={24} color="#01b3bd" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
 
       {/* Menu Items */}
-      <View style={styles.menuContainer}>
+      {userRole==='user' && <View style={styles.menuContainer}>
         <DrawerItem
           icon="home-outline"
           label="Home"
@@ -100,6 +100,19 @@ export const DrawerContent = (props) => {
           onPress={() => props.navigation.navigate("Needs")}
           isActive={currentRoute === "Needs"}
         />
+        
+        <DrawerItem
+          icon="log-out-outline"
+          label="Logout"
+          onPress={handleLogout}
+          isActive={false}
+        />
+      
+      
+      
+      </View>
+      }
+      {userRole==='doctor' && <View style={styles.menuContainer}>
         <DrawerItem
           icon="document-text-outline"
           label="Requests Review"
@@ -118,7 +131,7 @@ export const DrawerContent = (props) => {
           onPress={handleLogout}
           isActive={false}
         />
-      </View>
+        </View>}    
     </SafeAreaView>
   );
 };
@@ -146,6 +159,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     backgroundColor: "#fff",
     paddingInline: 16,
+    marginTop: 17,
   },
   profileHeader: {
     marginTop: 35,
@@ -157,6 +171,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     marginBottom: 10,
     paddingTop: 10,
+    paddingBottom: 10,
   },
   profileInfo: {
     flexDirection: "row",

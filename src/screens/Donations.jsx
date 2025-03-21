@@ -49,7 +49,6 @@ export function Donations() {
       {/* Medicine Image */}
       <Image source={{ uri: item.image_path }} style={styles.img} />
 
-      {/* Medicine Details */}
       <View style={styles.infoContainer}>
         <Text style={styles.text}>
           <Text style={styles.boldText}>Name:</Text> {item.name}
@@ -69,8 +68,8 @@ export function Donations() {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <Button mode="contained" style={[styles.btn, styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>
-          <Button mode="contained" style={[styles.btn, styles.deleteBtn]} onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}>Delete</Button>
+          <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>
+          <Button mode="contained" style={[ styles.deleteBtn]} onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}>Delete</Button>
         </View>
       </View>
     </View>
@@ -90,8 +89,10 @@ export function Donations() {
 // Styles
 const styles = StyleSheet.create({
   container: {
+    marginTop: 5,
     paddingVertical: 20,
     alignItems: "center",
+    // marginBottom: 30,
   },
   cardContainer: {
     flexDirection: "row",
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E7F8F6", // Light cyan background
     borderRadius: 15,
     // padding: 15,
+
     marginBottom: 15,
     width: "90%",
     elevation: 3, // Shadow effect
@@ -126,12 +128,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#c6cbc9",
     borderRadius: 15,
+
     marginBottom: 15,
     width: "90%",
     elevation: 3, // Shadow effect
   },
   img: {
+
     width: '30%',
+
     height: '100%',
     borderRadius: 10,
     resizeMode: "cover",
@@ -152,20 +157,30 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 8,
+    gap: 6,
   },
   btn: {
     borderRadius: 15,
     paddingVertical: 2,
     paddingHorizontal: 2,
+
     marginHorizontal: 6,
     marginBottom: 15,  
+
   },
   addBtn: {
-    backgroundColor:Colors.mainColor, // Blue button
+    backgroundColor: Colors.mainColor, // Blue button
+    width: "50%",
   },
   deleteBtn: {
     backgroundColor: "#E64E67", // Red button
+    width: "50%",
+  },
+  infoContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 13,
   },
 });
 

@@ -1,14 +1,17 @@
-
 import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  StyleSheet, 
-  Image, 
-  TouchableOpacity, 
-  Alert 
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { Text, TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import Icon from "react-native-vector-icons/FontAwesome5";
+import Icon2 from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useAddOrderMutation,useUpdateOrderMutation } from "../redux/Slice/order";
@@ -18,10 +21,11 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 
 const theme = {
   colors: {
-    primary: "#00bcd4", // example primary color
+    primary: "#01b3bd",
     background: "#ffffff",
     text: "#333",
     error: "#D32F2F",
+    onSurfaceVariant: "#01b3bd" // This controls the label color
   },
 };
 
@@ -164,52 +168,76 @@ export const RequestMedicine = () => {
 
   return (
     <PaperProvider theme={theme}>
-      <View style={styles.container}>
-        <Text style={styles.title}>
-          {item && item._id ? "Update Medicine" : "Request Medicine"}
-        </Text>
-        <Icon name="favorite" size={50} color="#00bcd4" style={styles.icon} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>
+              {item && item._id ? "Update Medicine" : "Request Medicine"}
+            </Text>
+            <View style={{ alignItems: "center", marginBottom: 20 }}> 
+              <Icon name="hand-holding-medical" size={45} color="#01b3bd" />
+            </View>
 
+        
         {/* Medicine Name Input */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Medicine Name"
+            mode="outlined"
+            label="Medicine Name"
             value={medicineName}
             onChangeText={setMedicineName}
+            outlineColor="#01b3bd"
+            activeOutlineColor="#01b3bd"
           />
         </View>
 
-        {/* Description Input */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Description"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-        </View>
+            {/* Description Input */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                mode="outlined"
+                label="Description"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                outlineColor="#01b3bd"
+                activeOutlineColor="#01b3bd"
+              />
+            </View>
 
-        {/* Selected Image Preview */}
-        {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
+            {/* Selected Image Preview */}
+            {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
 
-        {/* Upload Image Button */}
-        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-          <Icon name="photo-camera" size={24} color="#00bcd4" />
-          <Text style={styles.uploadButtonText}>Select Image</Text>
-        </TouchableOpacity>
+            {/* Upload Image Button */}
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <Icon2 name="photo-camera" size={24} color="#01b3bd" />
+              <Text style={styles.uploadButtonText}>Select Image</Text>
+            </TouchableOpacity>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleRequestMedicine}
-        >
-          <Text style={styles.submitButtonText}>
-            {isAddingOrder ? "Submitting..." : item && item._id ? "Update Medicine" : "Request Medicine"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleRequestMedicine}
+            >
+              <Text style={styles.submitButtonText}>
+                {isAddingOrder
+                  ? "Submitting..."
+                  : item && item._id
+                  ? "Update Medicine"
+                  : "Request Medicine"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </PaperProvider>
   );
 };
@@ -217,14 +245,20 @@ export const RequestMedicine = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6e6e6",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
+    marginBottom: 60,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    // width: "100%",
+    // paddingBottom: 20,
   },
   title: {
     fontSize: 24,
-    color: "#00bcd4",
+    color: "#01b3bd",
     marginBottom: 20,
     fontWeight: "bold",
   },
@@ -237,13 +271,12 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#00bcd4",
+    borderColor: "#01b3bd",
     borderRadius: 8,
     paddingHorizontal: 15,
     height: 50,
     fontSize: 16,
-    color: "#333",
+    
   },
   textArea: {
     height: 100,
@@ -255,7 +288,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#00bcd4",
+    borderColor: "#01b3bd",
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 20,
@@ -263,12 +296,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   uploadButtonText: {
-    color: "#00bcd4",
+    color: "#01b3bd",
     fontSize: 16,
     marginLeft: 10,
   },
   submitButton: {
-    backgroundColor: "#00bcd4",
+    backgroundColor: "#01b3bd",
     borderRadius: 8,
     paddingVertical: 15,
     width: "100%",

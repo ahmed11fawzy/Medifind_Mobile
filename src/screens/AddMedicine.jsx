@@ -1,6 +1,9 @@
 import Icon from "react-native-vector-icons/FontAwesome5";
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+
+
 import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
@@ -133,22 +136,52 @@ export const AddMedicine = () => {
 
   return (
     <PaperProvider theme={theme}>
-      <View style={styles.container}>
-        <Text style={styles.title}>{medicine ? "Update Medicine" : "Add Medicine"}</Text>
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
-        </View>
 
-        <TextInput label="Medicine Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} outlineColor={Colors.mainColor} />
-        {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
+
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
+              <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
+            </View>
+
+            {/* Medicine Name Input */}
+            <TextInput
+              label="Medicine Name"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              outlineColor={Colors.mainColor}
+            />
+            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+
 
         <TextInput label="Expire Date" value={formattedDate} onFocus={() => setShowDatePicker(true)} mode="outlined" style={styles.input} outlineColor={Colors.mainColor} />
         {errors.date && <HelperText type="error">{errors.date}</HelperText>}
 
         {showDatePicker && <DateTimePicker testID="dateTimePicker" value={date} mode="date" display="calendar" minimumDate={new Date()} onChange={handleDateChange} />}
+            {/* Medicine Concentration Input */}
+            <TextInput
+              label="Medicine Concentration"
+              value={concentration}
+              onChangeText={setConcentration}
+              mode="outlined"
+              outlineColor={Colors.mainColor}
+              style={styles.input}
+            />
+            {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
-        <TextInput label="Medicine Concentration" value={concentration} onChangeText={setConcentration} mode="outlined" outlineColor={Colors.mainColor} style={styles.input} />
-        {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
         <View style={styles.imagePickerContainer}>
           <TouchableOpacity onPress={handleImagePick} style={styles.imagePicker}>
@@ -159,22 +192,82 @@ export const AddMedicine = () => {
         </View>
         {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
+
         <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
           {isLoading || isUploading ? "Processing..." : medicine ? "Update Medicine" : "Add Medicine"}
         </Button>
-      </View>
+      </View>        
+        </ScrollView>
+      </KeyboardAvoidingView>
     </PaperProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 20, backgroundColor: "#ffffff" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 40, color: Colors.mainColor },
-  input: { marginBottom: 12, width: "100%" },
-  button: { backgroundColor: Colors.mainColor, marginTop: 15, width: "60%", borderRadius: 12 },
-  imagePickerContainer: { width: "100%", alignItems: "center", marginVertical: 10 },
-  imagePicker: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 12, borderWidth: 1, borderColor: Colors.mainColor, padding: 10 },
-  imagePreview: { width: 100, height: 100, borderRadius: 12, marginVertical: 10, resizeMode: "cover" },
+
+
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    justifyContent: "center",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    // width: "100%",
+    // paddingBottom: Platform.OS === 'ios' ? 120 : 90,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 40,
+    color: Colors.mainColor,
+    fontFamily: "Georgia",
+    textAlign: "center",
+  },
+  input: {
+    marginBottom: 12,
+    width: "100%",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    border:Colors.mainColor
+  },
+  button: {
+    backgroundColor: Colors.mainColor,
+    marginTop: 15,
+    width: "60%",
+    borderRadius: 12,
+    alignSelf: "center",
+    fontSize: 66,
+    paddingVertical: 10,
+    marginBottom: 20,
+  },
+  imagePickerContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  imagePicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.mainColor,
+    padding: 10,
+    width: "100%",
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginVertical: 10,
+    resizeMode: "cover",
+  },
+
 });
 
 export default AddMedicine;

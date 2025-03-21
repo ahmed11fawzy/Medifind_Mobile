@@ -82,7 +82,12 @@ export function RequestsReview() {
 
   // Check if there's no data
   if (combinedData.length === 0) {
-    return <Text style={styles.errorText}>No pending requests available.</Text>;
+    return (  
+      <View style={styles.container}>
+        <Text style={styles.title}> No Requests</Text>
+        <MedicineRequestIcon />
+      </View>
+    );
   }
 
   // Render each request item

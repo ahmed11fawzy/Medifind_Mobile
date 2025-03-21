@@ -11,6 +11,7 @@ export const roundedCard = StyleSheet.create({
         width: '80%',
         marginHorizontal: '10%',
         marginBottom: 20,
+
         backgroundColor: '#f5f5f5',
         padding: 15,
         borderRadius: 10,
@@ -25,7 +26,7 @@ export const roundedCard = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8
     },
-    row:{
+    row: {
         flexDirection: 'row',
     }
 
