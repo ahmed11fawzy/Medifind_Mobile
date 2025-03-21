@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 8,
     // backgroundColor: "#93f1d8",
-    backgroundColor: "#93f1cd",
+    backgroundColor: "#a4ffc8e6",
     elevation: 2,
     marginHorizontal: 10,
     overflow: "hidden",

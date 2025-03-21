@@ -43,7 +43,9 @@ export function Donations() {
 
   // Render each medicine card
   const renderItem = ({ item }) => (
-    <View style={styles.cardContainer}>
+    
+      
+    <View style={item.status?styles.cardAccepted:item.examine?styles.cardRejected:styles.cardWaiting}>
       {/* Medicine Image */}
       <Image source={{ uri: item.image_path }} style={styles.img} />
 
@@ -55,6 +57,15 @@ export function Donations() {
         <Text style={styles.text}>
           <Text style={styles.boldText}>Expire date:</Text> {item.expire_date.split("T")[0]}
         </Text>
+       {item.status&&item.examine&& <Text style={styles.text}>status:
+         <Text style={{...styles.boldText,color:'green'}}> Accepted</Text> 
+        </Text>}
+       {!item.status&& item.examine&& <Text style={styles.text}>status:
+         <Text style={{...styles.boldText,color:'red'}}> Rejected</Text> 
+        </Text>}
+       {!item.status&& !item.examine&& <Text style={styles.text}>status:
+         <Text style={{...styles.boldText,color:'grey'}}> waiting for approval</Text> 
+        </Text>}
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
@@ -71,6 +82,7 @@ export function Donations() {
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.container}
+
     />
   );
 }
@@ -86,16 +98,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#E7F8F6", // Light cyan background
     borderRadius: 15,
-    padding: 15,
+    // padding: 15,
+    marginBottom: 15,
+    width: "90%",
+    elevation: 3, // Shadow effect
+  },
+  cardAccepted: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#a4ffc8e6",
+    borderRadius: 15,
+    marginBottom: 15,
+    width: "90%",
+    // elevation: 3, // Shadow effect
+  },
+  cardRejected: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5b2b6",
+    borderRadius: 15,
+    marginBottom: 15,
+    width: "90%",
+    elevation: 3, // Shadow effect
+  },
+  cardWaiting: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#c6cbc9",
+    borderRadius: 15,
     marginBottom: 15,
     width: "90%",
     elevation: 3, // Shadow effect
   },
   img: {
-    width: 80,
-    height: 80,
+    width: '30%',
+    height: '100%',
     borderRadius: 10,
-    resizeMode: "contain",
+    resizeMode: "cover",
   },
   infoContainer: {
     flex: 1,
@@ -104,6 +143,8 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     marginBottom: 5,
+    margin: 5,
+    
   },
   boldText: {
     fontWeight: "bold",
@@ -117,7 +158,8 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 2,
     paddingHorizontal: 2,
-    marginHorizontal: 5,
+    marginHorizontal: 6,
+    marginBottom: 15,  
   },
   addBtn: {
     backgroundColor:Colors.mainColor, // Blue button
