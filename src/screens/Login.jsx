@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { StyleSheet, Text, Image, TouchableOpacity, View, Alert } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, Text, Image, TouchableOpacity, View, Alert, ScrollView, Dimensions } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TextInput } from 'react-native-paper';
 import { useUserLoginMutation } from '../redux/Slice/user'
@@ -12,9 +12,14 @@ export default function Login({ navigation }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errors, setErrors] = useState({})
+    const [isFormValid, setIsFormValid] = useState(false)
     const [userLogin, { isLoading: isLoginLoading }] = useUserLoginMutation()
     const dispatch = useDispatch();
     
+    useEffect(() => {
+        setIsFormValid(Object.keys(errors).length === 0 && email !== '' && password !== '')
+    }, [email, password, errors])
+
     const validateForm = () => {
         let newErrors = {}
 
@@ -69,9 +74,9 @@ export default function Login({ navigation }) {
                             user: decodedToken || response.data 
                         }));
                         
-                        Alert.alert('Success', 'Login successful');
+                        
 
-                        navigation.navigate('Home');
+                        navigation.navigate('MainApp', { screen: 'Home' });
 
                     } else {
                         console.error('No token found in response');
@@ -101,7 +106,7 @@ export default function Login({ navigation }) {
     }
 
     return (
-        <View style={[styles.container, { marginTop: 30 }]}>
+        <ScrollView  style={[styles.container, { paddingTop: 50 }]}>
             <View style={{ flexDirection: 'row', paddingBottom: 0 }} >
                 <Text style={{ fontSize: 25, fontWeight: 'bold' }}>Login</Text>
                 <Entypo name='user' size={18} style={{ marginInlineStart: "10", marginTop: "10" }} />
@@ -142,7 +147,10 @@ export default function Login({ navigation }) {
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
             <TouchableOpacity
-                style={styles.button}
+                style={[
+                    styles.button,
+                    { backgroundColor: isFormValid ? 'rgba(0, 179, 188, 0.9)' : 'rgba(0, 179, 188, 0.55)' }
+                ]}
                 onPress={handleSubmit}
             >
                 <Text style={styles.buttonText}>Login</Text>
@@ -159,7 +167,7 @@ export default function Login({ navigation }) {
                 />
             </View>
             <Text style={{ color: '#b1afa9', marginVertical: 20, textAlign: 'center' }} >Don't have an account? <Text style={{ color: '#00b2bc' }} onPress={() => navigation.navigate('RegisterPage')}>Sign up</Text></Text>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -189,7 +197,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     button: {
-        backgroundColor: 'rgba(0, 179, 188, 0.55)',
+        
         width: '100%',
         padding: 15,
         borderRadius: 5,

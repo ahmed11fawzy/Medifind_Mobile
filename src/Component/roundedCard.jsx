@@ -16,23 +16,22 @@ export const RoundedCard = ({ medicine }) => {
     const [addRequest] = useAddRequestMutation();
 
     const handlePick = async () => {
-        console.log("🚀 Sending Data:", { 
+        console.log(" Sending Data:", { 
             user_id: userId, 
-            medicine: medicine?._id, // <-- هنا استخدم _id بدلًا من id
+            medicine: medicine?._id,
             status: true 
         });
     
         try {
             const response = await addRequest({
                 user_id: userId,  
-                medicine: medicine?._id, // <-- هنا أيضًا
-                status: true,
+                medicine: medicine?._id, 
             }).unwrap(); 
     
-            console.log("✅ Request Added Successfully:", response);
+            console.log("Request Added Successfully:", response);
             navigation.navigate("Needs");
         } catch (error) {
-            console.error("❌ Error Adding Request:", error);
+            console.error("Error Adding Request:", error);
         }
     };
     return (
@@ -59,4 +58,3 @@ export const RoundedCard = ({ medicine }) => {
         </View>
     )
 };
-

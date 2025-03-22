@@ -44,7 +44,7 @@ const MedicineCard = ({ medicine, onAdd, onDelete }) => {
               style={styles.addButton}
               labelStyle={styles.buttonLabel}
             >
-              Add
+              Accept
             </Button>
 
             <Button
@@ -53,7 +53,7 @@ const MedicineCard = ({ medicine, onAdd, onDelete }) => {
               style={styles.deleteButton}
               labelStyle={styles.buttonLabel}
             >
-              Delete
+              Reject
             </Button>
           </View>
         </View>

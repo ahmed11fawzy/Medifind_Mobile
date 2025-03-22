@@ -1,18 +1,17 @@
-
 import Icon from "react-native-vector-icons/FontAwesome5";
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+
 
 import { TextInput, Button, HelperText, PaperProvider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-
 import { useAddMedicineMutation, useUpdateMedicineMutation } from "../redux/Slice/medicine";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Colors } from "../constants/RootColor";
-
 
 const theme = {
   colors: {
@@ -28,30 +27,28 @@ export const AddMedicine = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const auth = useAuth();
-
   const [addMedicine, { isLoading }] = useAddMedicineMutation();
   const [updateMedicine] = useUpdateMedicineMutation();
 
   // Extract medicine data if updating
-  const med_id = route.params?.med_id || null;
-  const [name, setName] = useState(route.params?.name || "");
-  const [concentration, setConcentration] = useState(route.params?.concentration || "");
-  const [formattedDate, setFormattedDate] = useState(route.params?.expire_date || "");
-  const [img, setImg] = useState(route.params?.image_path || "");
-  const [date, setDate] = useState(formattedDate ? new Date(formattedDate) : new Date());
+  const medicine = route.params?.medicine || null;
+  const [name, setName] = useState("");
+  const [concentration, setConcentration] = useState("");
+  const [formattedDate, setFormattedDate] = useState("");
+  const [img, setImg] = useState("");
+  const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
   const [isUploading, setUploading] = useState(false);
 
-
   useEffect(() => {
-    if (med_id) {
-      setName(route.params?.name || "");
-      setConcentration(route.params?.concentration || "");
-      setFormattedDate(route.params?.expire_date || "");
-      setImg(route.params?.image_path || "");
+    if (medicine) {
+      setName(medicine.name || "");
+      setConcentration(medicine.concentration || "");
+      setFormattedDate(medicine.expire_date || "");
+      setImg(medicine.image_path || "");
     }
-  }, [med_id]);
+  }, [medicine]);
 
   const validateInputs = () => {
     let newErrors = {};
@@ -64,13 +61,12 @@ export const AddMedicine = () => {
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
+    if (event.type === "set" && selectedDate) {
       setDate(selectedDate);
       setFormattedDate(selectedDate.toISOString().split("T")[0]);
     }
+    setShowDatePicker(false);
   };
-
 
   const handleImagePick = async () => {
     try {
@@ -81,7 +77,7 @@ export const AddMedicine = () => {
         quality: 1,
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setUploading(true);
         const formData = new FormData();
         formData.append("file", {
@@ -119,8 +115,8 @@ export const AddMedicine = () => {
         user_id: auth.userId,
       };
 
-      if (med_id) {
-        await updateMedicine({ id: med_id, ...requestData }).unwrap();
+      if (medicine) {
+        await updateMedicine({ id: medicine._id, ...requestData }).unwrap();
         Alert.alert("Success", "Medicine updated successfully!");
       } else {
         await addMedicine(requestData).unwrap();
@@ -133,7 +129,6 @@ export const AddMedicine = () => {
       setImg("");
       setErrors({});
       navigation.navigate("Donations");
-
     } catch (error) {
       Alert.alert("Error", "Failed to process the medicine.");
     }
@@ -141,95 +136,89 @@ export const AddMedicine = () => {
 
   return (
     <PaperProvider theme={theme}>
-      <View style={styles.container}>
 
-        <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>{medicine ? "Update Medicine" : "Add Medicine"}</Text>
 
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
-        </View>
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
+              <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
+            </View>
 
-        {/* Medicine Name Input */}
-        <TextInput
-          label="Medicine Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={styles.input}
-          outlineColor={Colors.mainColor}
-        />
-        {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+            {/* Medicine Name Input */}
+            <TextInput
+              label="Medicine Name"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              outlineColor={Colors.mainColor}
+            />
+            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
 
-        {/* Expire Date Input */}
-        <TextInput
-          label="Expire Date"
-          value={formattedDate}
-          onFocus={() => setShowDatePicker(true)}
-          mode="outlined"
-          style={styles.input}
 
-          outlineColor={Colors.mainColor}
-          right={<TextInput.Icon icon="calendar" color={Colors.mainColor} onPress={() => setShowDatePicker(true)} />}
-
-        />
+        <TextInput label="Expire Date" value={formattedDate} onFocus={() => setShowDatePicker(true)} mode="outlined" style={styles.input} outlineColor={Colors.mainColor} />
         {errors.date && <HelperText type="error">{errors.date}</HelperText>}
 
-        {showDatePicker && (
-          <DateTimePicker
+        {showDatePicker && <DateTimePicker testID="dateTimePicker" value={date} mode="date" display="calendar" minimumDate={new Date()} onChange={handleDateChange} />}
+            {/* Medicine Concentration Input */}
+            <TextInput
+              label="Medicine Concentration"
+              value={concentration}
+              onChangeText={setConcentration}
+              mode="outlined"
+              outlineColor={Colors.mainColor}
+              style={styles.input}
+            />
+            {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
 
 
-
-            testID="dateTimePicker"
-            value={date} // This should be a Date object
-
-            mode="date"
-            display="calendar"
-            minimumDate={new Date()}
-            onChange={handleDateChange}
-          />
-        )}
-
-        {/* Medicine Concentration Input */}
-        <TextInput
-          label="Medicine Concentration"
-          value={concentration}
-          onChangeText={setConcentration}
-          mode="outlined"
-          outlineColor={Colors.mainColor}
-          style={styles.input}
-        />
-        {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
-
-        {/* Image Upload Section */}
         <View style={styles.imagePickerContainer}>
           <TouchableOpacity onPress={handleImagePick} style={styles.imagePicker}>
-
             <Icon name="camera" size={20} color={Colors.mainColor} style={{ marginRight: 10 }} />
             <Button mode="text" color="#43a694">{img ? "Change Image" : "Upload Image"}</Button>
           </TouchableOpacity>
           {img && <Image source={{ uri: img }} style={styles.imagePreview} />}
-
         </View>
         {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
-        {/* Submit Button */}
 
         <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
-          {isLoading || isUploading ? "Processing..." : med_id ? "Update Medicine" : "Add Medicine"}
+          {isLoading || isUploading ? "Processing..." : medicine ? "Update Medicine" : "Add Medicine"}
         </Button>
-      </View>
+      </View>        
+        </ScrollView>
+      </KeyboardAvoidingView>
     </PaperProvider>
   );
 };
 
 const styles = StyleSheet.create({
+
+
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
     backgroundColor: "#ffffff",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    justifyContent: "center",
+    marginBottom:60
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    // width: "100%",
+    // paddingBottom: Platform.OS === 'ios' ? 120 : 90,
+    justifyContent: "center",
   },
   title: {
     fontSize: 24,
@@ -237,6 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     color: Colors.mainColor,
     fontFamily: "Georgia",
+    textAlign: "center",
   },
   input: {
     marginBottom: 12,
@@ -251,10 +241,10 @@ const styles = StyleSheet.create({
     width: "60%",
     borderRadius: 12,
     alignSelf: "center",
-    fontSize: 66, 
+    fontSize: 66,
     paddingVertical: 10,
+    marginBottom: 20,
   },
-  
   imagePickerContainer: {
     width: "100%",
     alignItems: "center",
@@ -271,13 +261,14 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
-  imagePreview:{
+  imagePreview: {
     width: 100,
     height: 100,
     borderRadius: 12,
     marginVertical: 10,
     resizeMode: "cover",
   },
+
 });
 
 export default AddMedicine;

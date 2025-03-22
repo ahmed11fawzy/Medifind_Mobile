@@ -12,7 +12,7 @@ import {
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
 import { useUserRegisterMutation } from "../redux/Slice/user";
-
+import { Link } from "@react-navigation/native";
 export function RegisterPage({ navigation }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -150,6 +150,11 @@ export function RegisterPage({ navigation }) {
                   {errors.api}
                 </Text>
               )}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account? 
+                <Text  style={{ color: '#00b2bc' , fontSize: 16  }} onPress={() => navigation.navigate('Login')}> Log in</Text >
+              </Text>
+            </View>
             </View>
           </View>
         </ScrollView>
@@ -162,6 +167,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#01b3bd",
+    paddingTop: 50,
   },
   title: {
     fontSize: 30,
@@ -189,5 +195,12 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 14,
     marginLeft: 30,
+  },
+  footer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  footerText: {
+    color: "gray",
   },
 });
