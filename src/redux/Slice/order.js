@@ -15,7 +15,12 @@ export const orders = coreApi.injectEndpoints({
                     console.log('Add order response:', response.substring(0, 100));
                     return {
                         data: JSON.parse(response),
-                        headers: meta.response.headers
+                        headers: {
+                            "content-type": meta.response.headers.get("content-type"),
+                            "content-length": meta.response.headers.get("content-length"),
+                            "authorization": meta.response.headers.get("authorization"),
+                            "token": meta.response.headers.get("x-auth-token")
+                        }
                     };
                 } catch (error) {
                     console.error('Error parsing add order response:', error);
@@ -43,7 +48,7 @@ export const orders = coreApi.injectEndpoints({
 
             query: ({ id, body }) => ({
                 url: `orders/${id}`,
-                method: 'PATCH', 
+                method: 'PATCH',
                 body,
                 responseHandler: 'text',
             }),
@@ -53,27 +58,27 @@ export const orders = coreApi.injectEndpoints({
             invalidatesTags: ['Orders'],
         }),
 
-    
+
         deleteOrder: build.mutation({
             query: ({ req_id, user_id }) => ({
-              url: `orders/${user_id}`, 
-              method: "DELETE",
-              headers: {   
-                "Content-Type": "application/json",
-                req_id: req_id,    
+                url: `orders/${user_id}`,
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    req_id: req_id,
                 },
             }),
             async onQueryStarted({ req_id }, { dispatch, queryFulfilled }) {
-              try {
-                await queryFulfilled;
-                console.log("✅ Order deleted successfully:", req_id);
-                dispatch(coreApi.util.invalidateTags(["Orders"])); 
-              } catch (error) {
-                console.error("❌ Error deleting order:", error);
-              }
+                try {
+                    await queryFulfilled;
+                    console.log("✅ Order deleted successfully:", req_id);
+                    dispatch(coreApi.util.invalidateTags(["Orders"]));
+                } catch (error) {
+                    console.error("❌ Error deleting order:", error);
+                }
             },
-          }),
-          
+        }),
+
 
         getAllOrders: build.query({  //for doctor view in requestsReview
             query: () => ({
