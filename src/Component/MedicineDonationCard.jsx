@@ -2,15 +2,42 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
+import { useAuth } from "../hooks/useAuth"; 
+import { useDispatch } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
+import { useAddRequestMutation } from "../redux/Slice/request"; 
 const MedicineDonationCard = ({medicine}) => {
   // Calculate days until expiry
+  const navigation = useNavigation();
+    const { userId } = useAuth(); 
+    const dispatch = useDispatch();
+    const [addRequest] = useAddRequestMutation();
+
+    const handlePick = async () => {
+        console.log(" Sending Data:", { 
+            user_id: userId, 
+            medicine: medicine?._id,
+            status: true 
+        });
+    
+        try {
+            const response = await addRequest({
+                user_id: userId,  
+                medicine: medicine?._id, 
+            }).unwrap(); 
+    
+            console.log("Request Added Successfully:", response);
+            navigation.navigate("Needs");
+        } catch (error) {
+            console.error("Error Adding Request:", error);
+        }
+    };
   const daysUntilExpiry = Math.ceil((new Date(medicine.expire_date) - new Date()) / (1000 * 60 * 60 * 24));
 
   return (
     <View style={styles.cardContainer}>
       <LinearGradient
-        colors={['#00b2bc', '#009da6']}
+        colors={['#00b2bc','#009da6']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradientBackground}
@@ -54,12 +81,11 @@ const MedicineDonationCard = ({medicine}) => {
           </View>
 
           {/* Action Button */}
-          <TouchableOpacity style={styles.actionButton} onPress={() => console.log('pressed')}>
+          <TouchableOpacity style={styles.actionButton} onPress={handlePick}>
             <MaterialCommunityIcons name="heart-pulse" size={24} color="#00b2bc" />
             <Text style={styles.actionButtonText}>Request Donation</Text>
           </TouchableOpacity>
         </View>
-
         {/* Decorative Elements */}
         <View style={styles.decorativeContainer}>
           <View style={styles.circle1} />

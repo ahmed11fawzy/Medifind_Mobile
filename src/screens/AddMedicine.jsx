@@ -149,7 +149,7 @@ export const AddMedicine = () => {
           bounces={false}
         >
           <View style={styles.container}>
-            <Text style={styles.title}>{med_id ? "Update Medicine" : "Add Medicine"}</Text>
+            <Text style={styles.title}>{medicine ? "Update Medicine" : "Add Medicine"}</Text>
 
             <View style={{ alignItems: "center", marginBottom: 20 }}>
               <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
@@ -212,6 +212,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     justifyContent: "center",
+    marginBottom:60
   },
   scrollContainer: {
     flexGrow: 1,
