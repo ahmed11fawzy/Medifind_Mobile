@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, FlatList, Alert, Image } from 'react-native';
-import { Button, Card } from 'react-native-paper';
+import { Button, Card ,Avatar} from 'react-native-paper';
 import { useGetUserOffersQuery, useDeleteMedicineMutation } from '../redux/Slice/medicine';
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +13,14 @@ export function Donations() {
   const [deleteMedicine] = useDeleteMedicineMutation();
   const [medicines, setMedicines] = useState([]);
 
+  const MedicineRequestIcon = () => (
+    <Avatar.Icon
+      size={50}
+      icon="pill"
+      color="#e3f4eb"
+      style={{ backgroundColor: Colors.mainColor }}
+    />
+  );
   // Load data into state when API call is successful
   useEffect(() => {
     if (data?.data) {
@@ -39,7 +47,12 @@ export function Donations() {
 
   if (isLoading) return <Text>Loading...</Text>;
   if (isError) return <Text>Error fetching data</Text>;
-  if (medicines.length === 0) return <Text>No donations available</Text>;
+  if (medicines.length === 0) return (
+    <View style={styles.container}>
+      <Text style={styles.title}> No Donations</Text>
+      <MedicineRequestIcon />
+    </View>
+  );
 
   // Render each medicine card
   const renderItem = ({ item }) => (
@@ -68,14 +81,16 @@ export function Donations() {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>
+          {item.examined&& <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>}
           <Button mode="contained" style={[ styles.deleteBtn]} onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}>Delete</Button>
         </View>
       </View>
     </View>
   );
 
+  
   return (
+    
     <FlatList
       data={medicines}
       renderItem={renderItem}
@@ -93,6 +108,14 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: "center",
     // marginBottom: 30,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 15,
+    marginHorizontal: 80,
+    color: "#8989899",
+    fontFamily: "serif",
   },
   cardContainer: {
     flexDirection: "row",
@@ -134,10 +157,9 @@ const styles = StyleSheet.create({
     elevation: 3, // Shadow effect
   },
   img: {
+    width: "30%",
 
-    width: '30%',
-
-    height: '100%',
+    height: "100%",
     borderRadius: 10,
     resizeMode: "cover",
   },
@@ -149,7 +171,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     margin: 5,
-    
   },
   boldText: {
     fontWeight: "bold",
@@ -166,8 +187,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
 
     marginHorizontal: 6,
-    marginBottom: 15,  
-
+    marginBottom: 15,
   },
   addBtn: {
     backgroundColor: Colors.mainColor, // Blue button

@@ -49,7 +49,7 @@ export const RequestMedicine = () => {
   // Pre-fill the form if an item is passed (update mode)
   useEffect(() => {
     if (item && item._id) {
-      setMedicineName(item.req_name || "");
+      setMedicineName(item.req_name || item.medicine.name);
       setDescription(item.req_description || "");
       setImage(item.prescription_img || "");
     }
@@ -152,7 +152,7 @@ export const RequestMedicine = () => {
         console.log("Request added successfully:", response);
         Alert.alert(
           "Success",
-          `Medicine Requested Successfully!\nName: ${medicineName}\nDescription: ${description}`
+          `Medicine Requested Successfully!`
         );
       }
       // Reset fields and navigate

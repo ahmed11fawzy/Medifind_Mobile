@@ -82,7 +82,7 @@ export function Needs() {
         <View style={styles.contentContainer}>
           <Image
             source={{
-              uri: item.prescription_img || (item.medicine && item.medicine.image_path),
+              uri:  (item.medicine && item.medicine.image_path) ||item.prescription_img ,
             }}
             style={styles.image}
           />
@@ -94,24 +94,27 @@ export function Needs() {
               </Text>
             </View>
 
-            {!item.requested && !item.examined && !item.status && (
-              <Button
-                mode="contained"
-                onPress={() => handleUpdateRequest(item)}
-                style={styles.checkoutButton}
-                labelStyle={styles.buttonLabel}
-              >
-                CheckOut
-              </Button>
-            )}
             {item.requested && !item.examined && !item.status && (
               <Text>Waiting for approval</Text>
             )}
             {item.requested && item.examined && item.status && <Text >Accepted</Text>}
             {item.requested && item.examined && !item.status && <Text>Rejected</Text>}
 
+
+
             <View style={styles.buttonContainer}>
-            {!item.examined &&  <Button
+              {!item.requested && !item.examined && !item.status && (
+                <Button
+                  mode="contained"
+                  onPress={() => handleUpdateRequest(item)}
+                  style={styles.checkoutButton}
+                  labelStyle={styles.buttonLabel}
+                >
+                  CheckOut
+                </Button>
+              )}
+
+            {!item.examined && item.requested &&  <Button
                 mode="contained"
                 onPress={() => handleUpdateRequest(item)}
                 style={styles.addButton}
@@ -155,7 +158,8 @@ export function Needs() {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 20,
-    paddingHorizontal:5
+    paddingHorizontal: 5,
+    paddingBottom: 100,
   },
   card: {
     marginVertical: 10,
@@ -204,8 +208,10 @@ const styles = StyleSheet.create({
   },
   details: {
     flex: 1,
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     padding: 16,
+    // marginLeft: -5,
+    
   },
   row: {
     flexDirection: "row",
@@ -232,9 +238,11 @@ const styles = StyleSheet.create({
   },
   checkoutButton: {
     backgroundColor: "#00bcd4",
-    width: "95%",
-    marginTop: 5,
-    marginHorizontal: 4,
+    width: "57%",
+    marginLeft: -8,
+    // marginRight: 4,
+    // marginTop: 5,
+    // marginHorizontal: 4,
   },
   deleteButton: {
     backgroundColor: "#e64e67",

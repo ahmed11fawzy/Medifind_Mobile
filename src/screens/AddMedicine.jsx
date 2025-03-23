@@ -36,6 +36,7 @@ export const AddMedicine = () => {
   const [concentration, setConcentration] = useState("");
   const [formattedDate, setFormattedDate] = useState("");
   const [img, setImg] = useState("");
+  const [quantity, setQuantity] = useState(0);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
@@ -47,6 +48,7 @@ export const AddMedicine = () => {
       setConcentration(medicine.concentration || "");
       setFormattedDate(medicine.expire_date || "");
       setImg(medicine.image_path || "");
+      setQuantity(medicine.quantity || 0);
     }
   }, [medicine]);
 
@@ -55,6 +57,7 @@ export const AddMedicine = () => {
     if (!name.trim()) newErrors.name = "Medicine name is required.";
     if (!formattedDate.trim()) newErrors.date = "Expire date is required.";
     if (!concentration.trim()) newErrors.concentration = "Concentration is required.";
+    if (!quantity) newErrors.quantity = "Quantity is required.";
     if (!img) newErrors.img = "Medicine image is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -113,6 +116,7 @@ export const AddMedicine = () => {
         concentration,
         image_path: img,
         user_id: auth.userId,
+        quantity: Number(quantity)
       };
 
       if (medicine) {
@@ -126,6 +130,7 @@ export const AddMedicine = () => {
       setName("");
       setFormattedDate("");
       setConcentration("");
+      setQuantity(0);
       setImg("");
       setErrors({});
       navigation.navigate("Donations");
@@ -136,8 +141,7 @@ export const AddMedicine = () => {
 
   return (
     <PaperProvider theme={theme}>
-
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
@@ -149,10 +153,16 @@ export const AddMedicine = () => {
           bounces={false}
         >
           <View style={styles.container}>
-            <Text style={styles.title}>{medicine ? "Update Medicine" : "Add Medicine"}</Text>
+            <Text style={styles.title}>
+              {medicine ? "Update Medicine" : "Add Medicine"}
+            </Text>
 
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <Icon name="hand-holding-heart" size={50} color={Colors.mainColor} />
+              <Icon
+                name="hand-holding-heart"
+                size={50}
+                color={Colors.mainColor}
+              />
             </View>
 
             {/* Medicine Name Input */}
@@ -166,11 +176,39 @@ export const AddMedicine = () => {
             />
             {errors.name && <HelperText type="error">{errors.name}</HelperText>}
 
+            <TextInput
+              label="Expire Date"
+              value={formattedDate}
+              onFocus={() => setShowDatePicker(true)}
+              mode="outlined"
+              style={styles.input}
+              outlineColor={Colors.mainColor}
+            />
+            {errors.date && <HelperText type="error">{errors.date}</HelperText>}
 
-        <TextInput label="Expire Date" value={formattedDate} onFocus={() => setShowDatePicker(true)} mode="outlined" style={styles.input} outlineColor={Colors.mainColor} />
-        {errors.date && <HelperText type="error">{errors.date}</HelperText>}
+            {showDatePicker && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date"
+                display="calendar"
+                minimumDate={new Date()}
+                onChange={handleDateChange}
+              />
+            )}
 
-        {showDatePicker && <DateTimePicker testID="dateTimePicker" value={date} mode="date" display="calendar" minimumDate={new Date()} onChange={handleDateChange} />}
+            <TextInput
+              label="Number of Pieces"
+              value={quantity}
+              onChangeText={setQuantity}
+              mode="outlined"
+              outlineColor={Colors.mainColor}
+              style={styles.input}
+            />
+            {errors.quantity && (
+              <HelperText type="error">{errors.quantity}</HelperText>
+            )}
+
             {/* Medicine Concentration Input */}
             <TextInput
               label="Medicine Concentration"
@@ -180,23 +218,45 @@ export const AddMedicine = () => {
               outlineColor={Colors.mainColor}
               style={styles.input}
             />
-            {errors.concentration && <HelperText type="error">{errors.concentration}</HelperText>}
+            {errors.concentration && (
+              <HelperText type="error">{errors.concentration}</HelperText>
+            )}
 
+            <View style={styles.imagePickerContainer}>
+              <TouchableOpacity
+                onPress={handleImagePick}
+                style={styles.imagePicker}
+              >
+                <Icon
+                  name="camera"
+                  size={20}
+                  color={Colors.mainColor}
+                  style={{ marginRight: 10 }}
+                />
+                <Button mode="text" color="#43a694">
+                  {img ? "Change Image" : "Upload Image"}
+                </Button>
+              </TouchableOpacity>
+              {img && (
+                <Image source={{ uri: img }} style={styles.imagePreview} />
+              )}
+            </View>
+            {errors.img && <HelperText type="error">{errors.img}</HelperText>}
 
-        <View style={styles.imagePickerContainer}>
-          <TouchableOpacity onPress={handleImagePick} style={styles.imagePicker}>
-            <Icon name="camera" size={20} color={Colors.mainColor} style={{ marginRight: 10 }} />
-            <Button mode="text" color="#43a694">{img ? "Change Image" : "Upload Image"}</Button>
-          </TouchableOpacity>
-          {img && <Image source={{ uri: img }} style={styles.imagePreview} />}
-        </View>
-        {errors.img && <HelperText type="error">{errors.img}</HelperText>}
-
-
-        <Button style={styles.button} textColor="white" mode="contained" loading={isLoading || isUploading} onPress={handleSubmit}>
-          {isLoading || isUploading ? "Processing..." : medicine ? "Update Medicine" : "Add Medicine"}
-        </Button>
-      </View>        
+            <Button
+              style={styles.button}
+              textColor="white"
+              mode="contained"
+              loading={isLoading || isUploading}
+              onPress={handleSubmit}
+            >
+              {isLoading || isUploading
+                ? "Processing..."
+                : medicine
+                ? "Update Medicine"
+                : "Add Medicine"}
+            </Button>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </PaperProvider>
