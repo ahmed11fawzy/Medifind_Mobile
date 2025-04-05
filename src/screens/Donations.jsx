@@ -81,7 +81,7 @@ export function Donations() {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          {item.examined&& <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>}
+          {!item.examine&& <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>}
           <Button mode="contained" style={[ styles.deleteBtn]} onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}>Delete</Button>
         </View>
       </View>
@@ -96,6 +96,7 @@ export function Donations() {
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.container}
+      
 
     />
   );
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     paddingVertical: 20,
     alignItems: "center",
-    // marginBottom: 30,
+    paddingBottom: 80,
   },
   title: {
     fontSize: 26,

@@ -179,7 +179,7 @@ export const RequestMedicine = () => {
         >
           <View style={styles.container}>
             <Text style={styles.title}>
-              {item && item._id ? "Update Medicine" : "Request Medicine"}
+              {item && item._id ? "Update Request" : "Request Medicine"}
             </Text>
             <View style={{ alignItems: "center", marginBottom: 20 }}> 
               <Icon name="hand-holding-medical" size={45} color="#01b3bd" />
