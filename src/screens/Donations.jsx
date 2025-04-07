@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, FlatList, Alert, Image } from 'react-native';
-import { Button, Card ,Avatar} from 'react-native-paper';
+import { Text, View, StyleSheet, FlatList, Alert, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Button, Card, Avatar } from 'react-native-paper';
 import { useGetUserOffersQuery, useDeleteMedicineMutation } from '../redux/Slice/medicine';
 import { useAuth } from "../hooks/useAuth";
 import { useNavigation } from '@react-navigation/native';
@@ -45,7 +45,11 @@ export function Donations() {
     navigation.navigate("AddMedicine", { medicine });
   };
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (isLoading) return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#00BCD4" />
+    </View>
+  );
   if (isError) return <Text>Error fetching data</Text>;
   if (medicines.length === 0) return (
     <View style={styles.container}>
@@ -56,33 +60,67 @@ export function Donations() {
 
   // Render each medicine card
   const renderItem = ({ item }) => (
-    
-      
-    <View style={item.status?styles.cardAccepted:item.examine?styles.cardRejected:styles.cardWaiting}>
-      {/* Medicine Image */}
-      <Image source={{ uri: item.image_path }} style={styles.img} />
+    <View style={styles.cardContainer}>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: item.image_path }} style={styles.img} />
+        <View style={styles.statusBadge}>
+          {item.status && item.examine && (
+            <View style={styles.statusContainer}>
+              <Avatar.Icon size={24} icon="check-circle" color="#fff" style={[styles.statusIcon, { backgroundColor: '#4CAF50' }]} />
+              <Text style={[styles.statusText, { color: '#fff' }]}>ACCEPTED</Text>
+            </View>
+          )}
+          {!item.status && item.examine && (
+            <View style={styles.statusContainer}>
+              <Avatar.Icon size={24} icon="close-circle" color="#fff" style={[styles.statusIcon, { backgroundColor: '#F44336' }]} />
+              <Text style={[styles.statusText, { color: '#fff' }]}>REJECTED</Text>
+            </View>
+          )}
+          {!item.status && !item.examine && (
+            <View style={styles.statusContainer}>
+              <Avatar.Icon size={24} icon="clock-outline" color="#fff" style={[styles.statusIcon, { backgroundColor: '#FFC107' }]} />
+              <Text style={[styles.statusText, { color: '#fff' }]}>PENDING</Text>
+            </View>
+          )}
+        </View>
+      </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.text}>
-          <Text style={styles.boldText}>Name:</Text> {item.name}
-        </Text>
-        <Text style={styles.text}>
-          <Text style={styles.boldText}>Expire date:</Text> {item.expire_date.split("T")[0]}
-        </Text>
-       {item.status&&item.examine&& <Text style={styles.text}>status:
-         <Text style={{...styles.boldText,color:'green'}}> Accepted</Text> 
-        </Text>}
-       {!item.status&& item.examine&& <Text style={styles.text}>status:
-         <Text style={{...styles.boldText,color:'red'}}> Rejected</Text> 
-        </Text>}
-       {!item.status&& !item.examine&& <Text style={styles.text}>status:
-         <Text style={{...styles.boldText,color:'grey'}}> waiting for approval</Text> 
-        </Text>}
+        <Text style={styles.medicineName}>{item.name}</Text>
+        
+        <View style={styles.detailsContainer}>
+          <View style={styles.detailRow}>
+            <Avatar.Icon size={20} icon="flask-outline" color={Colors.mainColor} style={styles.detailIcon} />
+            <View>
+              <Text style={styles.detailLabel}>Concentration</Text>
+              <Text style={styles.detailValue}>{item.concentration}</Text>
+            </View>
+          </View>
 
-        {/* Buttons */}
+          <View style={styles.detailRow}>
+            <Avatar.Icon size={20} icon="calendar-clock" color={Colors.mainColor} style={styles.detailIcon} />
+            <View>
+              <Text style={styles.detailLabel}>Expires</Text>
+              <Text style={styles.detailValue}>{item.expire_date.split("T")[0]}</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.buttonContainer}>
-          {!item.examine&& <Button mode="contained" style={[ styles.addBtn]} onPress={() => handleUpdate(item)}>Update</Button>}
-          <Button mode="contained" style={[ styles.deleteBtn]} onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}>Delete</Button>
+          {!item.examine && (
+            <TouchableOpacity 
+              style={[styles.iconButton, { backgroundColor: Colors.mainColor }]}
+              onPress={() => handleUpdate(item)}
+            >
+              <Avatar.Icon size={24} icon="pencil" color="#fff" style={styles.actionIcon} />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity 
+            style={[styles.iconButton, { backgroundColor: '#E64E67' }]}
+            onPress={() => handleDelete({ user_id: userId, medicine_id: item._id })}
+          >
+            <Avatar.Icon size={24} icon="delete" color="#fff" style={styles.actionIcon} />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -90,14 +128,14 @@ export function Donations() {
 
   
   return (
-    
     <FlatList
       data={medicines}
       renderItem={renderItem}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.container}
-      
-
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+      overScrollMode="always"
     />
   );
 }
@@ -105,9 +143,8 @@ export function Donations() {
 // Styles
 const styles = StyleSheet.create({
   container: {
-    marginTop: 5,
+    flexGrow: 1,
     paddingVertical: 20,
-    alignItems: "center",
     paddingBottom: 80,
   },
   title: {
@@ -119,89 +156,120 @@ const styles = StyleSheet.create({
     fontFamily: "serif",
   },
   cardContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E7F8F6", // Light cyan background
-    borderRadius: 15,
-    // padding: 15,
-
-    marginBottom: 15,
-    width: "90%",
-    elevation: 3, // Shadow effect
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    marginHorizontal: 40,
+    marginVertical: 8,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  cardAccepted: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#a4ffc8e6",
-    borderRadius: 15,
-    marginBottom: 15,
-    width: "90%",
-    // elevation: 3, // Shadow effect
-  },
-  cardRejected: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5b2b6",
-    borderRadius: 15,
-    marginBottom: 15,
-    width: "90%",
-    elevation: 3, // Shadow effect
-  },
-  cardWaiting: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#c6cbc9",
-    borderRadius: 15,
-
-    marginBottom: 15,
-    width: "90%",
-    elevation: 3, // Shadow effect
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 200,
+    backgroundColor: '#f5f5f5',
   },
   img: {
-    width: "30%",
-
-    height: "100%",
-    borderRadius: 10,
+    width: '100%',
+    height: '100%',
     resizeMode: "cover",
   },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 15,
+  statusBadge: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    borderRadius: 25,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    backgroundColor: 'rgba(78, 77, 77, 0.51)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    minWidth: 100,
   },
-  text: {
-    fontSize: 16,
-    marginBottom: 5,
-    margin: 5,
-  },
-  boldText: {
-    fontWeight: "bold",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
   },
-  btn: {
-    borderRadius: 15,
-    paddingVertical: 2,
-    paddingHorizontal: 2,
-
-    marginHorizontal: 6,
-    marginBottom: 15,
+  statusIcon: {
+    backgroundColor: 'transparent',
   },
-  addBtn: {
-    backgroundColor: Colors.mainColor, // Blue button
-    width: "50%",
-  },
-  deleteBtn: {
-    backgroundColor: "#E64E67", // Red button
-    width: "50%",
+  statusText: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: 'capitalize',
+    letterSpacing: 0.5,
   },
   infoContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  medicineName: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2D3436",
+    marginBottom: 16,
+  },
+  detailsContainer: {
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  detailIcon: {
+    backgroundColor: 'transparent',
+    marginRight: 12,
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: "#636E72",
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2D3436",
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  iconButton: {
+    borderRadius: 20,
+    padding: 6,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  actionIcon: {
+    backgroundColor: 'transparent',
+  },
+  loadingContainer: {
     flex: 1,
-    justifyContent: "space-between",
-    padding: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

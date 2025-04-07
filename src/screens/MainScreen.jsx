@@ -42,8 +42,8 @@ const RequestMedicine = lazy(() =>
     default: module.RequestMedicine,
   }))
 );
-const Needs = lazy(() =>
-  import("./Needs").then((module) => ({ default: module.Needs }))
+const Orders = lazy(() =>
+  import("./Orders").then((module) => ({ default: module.Orders }))
 );
 const RequestsReview = lazy(() =>
   import("./RequestsReview").then((module) => ({
@@ -192,12 +192,12 @@ const MainAppStack = () => (
       )}
     </Drawer.Screen>
 
-    <Drawer.Screen name="Needs">
+    <Drawer.Screen name="Orders">
       {(props) => (
         <ScreenWithBottomBar navigation={props.navigation}>
           <Suspense fallback={<LoadingScreen />}>
             <ProtectedRoute
-              component={Needs}
+              component={Orders}
             allowedRoles={[ROLES.USER]}
             {...props}
             />
