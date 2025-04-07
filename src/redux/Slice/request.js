@@ -1,4 +1,3 @@
-
 import { coreApi } from './coreApi'
 
 export const request = coreApi.injectEndpoints({
@@ -21,19 +20,24 @@ export const request = coreApi.injectEndpoints({
                         console.error('Empty response received');
                         throw new Error('Server returned an empty response');
                     }
-                    
+
                     // Check if response starts with HTML
                     if (response.trim().startsWith('<!DOCTYPE') || response.trim().startsWith('<html')) {
                         console.error('HTML response received instead of JSON:', response.substring(0, 100));
                         throw new Error('Server returned HTML instead of JSON. Please check if the server is running correctly.');
                     }
-                    
+
                     // Log the raw response for debugging
                     console.log('Raw response from server:', response.substring(0, 200));
-                    
+
                     return {
                         data: JSON.parse(response),
-                        headers: meta.response.headers
+                        headers: {
+                            "content-type": meta.response.headers.get("content-type"),
+                            "content-length": meta.response.headers.get("content-length"),
+                            "authorization": meta.response.headers.get("authorization"),
+                            "token": meta.response.headers.get("x-auth-token")
+                        }
                     };
                 } catch (error) {
                     console.error('Failed to parse response:', error.message);
@@ -51,23 +55,23 @@ export const request = coreApi.injectEndpoints({
                 responseHandler: 'text',
             }),
             transformResponse: (response) => ({
-                data: JSON.parse(response), 
+                data: JSON.parse(response),
             }),
             invalidatesTags: ['Request'],
         }),
-        
-      deleteRequest: build.mutation({
-        query: ({req_id,user_id}) => ({
-            url: `request/${user_id}`,
-            method: "DELETE",
-            responseHandler: "text",
-            headers: {
-                "Content-Type": "application/json",
-                  req_id:req_id,
-            }
+
+        deleteRequest: build.mutation({
+            query: ({ req_id, user_id }) => ({
+                url: `request/${user_id}`,
+                method: "DELETE",
+                responseHandler: "text",
+                headers: {
+                    "Content-Type": "application/json",
+                    req_id: req_id,
+                }
+            }),
+            invalidatesTags: ["Request"], // Invalidate cache to refetch updated data
         }),
-        invalidatesTags: ["Request"], // Invalidate cache to refetch updated data
-    }),
         getUserRequests: build.query({
             query: (id) => ({
                 url: `request/${id}`,
@@ -75,17 +79,17 @@ export const request = coreApi.injectEndpoints({
             }),
             providesTags: ['Request']
         }),
-        getAllRequests:build.query({   //for doctor view in requestsReview
-            query:()=>({
-                url:  `request`,
+        getAllRequests: build.query({   //for doctor view in requestsReview
+            query: () => ({
+                url: `request`,
                 method: `GET`
             }),
-                providesTags:['Request'],
-                overrideExisting: true
-            }),
+            providesTags: ['Request'],
+            overrideExisting: true
+        }),
 
-})
+    })
 
 });
 
-export const { useAddRequestMutation,useUpdateRequestMutation,useDeleteRequestMutation,useGetUserRequestsQuery, useGetAllRequestsQuery} = request;
+export const { useAddRequestMutation, useUpdateRequestMutation, useDeleteRequestMutation, useGetUserRequestsQuery, useGetAllRequestsQuery } = request;

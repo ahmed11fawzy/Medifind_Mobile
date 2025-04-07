@@ -49,7 +49,7 @@ export const RequestMedicine = () => {
   // Pre-fill the form if an item is passed (update mode)
   useEffect(() => {
     if (item && item._id) {
-      setMedicineName(item.req_name || "");
+      setMedicineName(item.req_name || item.medicine.name);
       setDescription(item.req_description || "");
       setImage(item.prescription_img || "");
     }
@@ -152,7 +152,7 @@ export const RequestMedicine = () => {
         console.log("Request added successfully:", response);
         Alert.alert(
           "Success",
-          `Medicine Requested Successfully!\nName: ${medicineName}\nDescription: ${description}`
+          `Medicine Requested Successfully!`
         );
       }
       // Reset fields and navigate
@@ -179,7 +179,7 @@ export const RequestMedicine = () => {
         >
           <View style={styles.container}>
             <Text style={styles.title}>
-              {item && item._id ? "Update Medicine" : "Request Medicine"}
+              {item && item._id ? "Update Request" : "Request Medicine"}
             </Text>
             <View style={{ alignItems: "center", marginBottom: 20 }}> 
               <Icon name="hand-holding-medical" size={45} color="#01b3bd" />

@@ -96,9 +96,9 @@ export const DrawerContent = (props) => {
         />
         <DrawerItem
           icon="help-circle-outline"
-          label="Needs"
-          onPress={() => props.navigation.navigate("Needs")}
-          isActive={currentRoute === "Needs"}
+          label="Orders"
+          onPress={() => props.navigation.navigate("Orders")}
+          isActive={currentRoute === "Orders"}
         />
         
         <DrawerItem

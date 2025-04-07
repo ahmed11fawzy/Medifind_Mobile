@@ -4,7 +4,7 @@ export const medicine = coreApi.injectEndpoints({
     endpoints: (build) => ({
         getAllMedicines: build.query({    //why i need it? -->for doctor view in offersReview 
             query: () => ({
-                url: 'medicine', 
+                url: 'medicine',
                 method: 'GET',
             }),
             transformResponse: (response) => {
@@ -18,13 +18,13 @@ export const medicine = coreApi.injectEndpoints({
             providesTags: ['Medicine']
         }),
 
-        getUserOffers:build.query({    //for donation screen
-            query:(id)=>({
-                url:`medicine/${id}`,
+        getUserOffers: build.query({    //for donation screen
+            query: (id) => ({
+                url: `medicine/${id}`,
                 method: 'Get',
 
             }),
-            providesTags:['Medicine']
+            providesTags: ['Medicine']
 
         }),
         getAcceptedMedicines: build.query({
@@ -41,13 +41,15 @@ export const medicine = coreApi.injectEndpoints({
                 body,
                 responseHandler: 'text',  // Add this to get raw response
             }),
-                transformResponse: (response, meta) => ({
-            data: JSON.parse(response),
-            headers: {
-                "content-type": meta.response.headers.get("content-type"),
-                "content-length": meta.response.headers.get("content-length"),
-            }
-                    }),
+            transformResponse: (response, meta) => ({
+                data: JSON.parse(response),
+                headers: {
+                    "content-type": meta.response.headers.get("content-type"),
+                    "content-length": meta.response.headers.get("content-length"),
+                    "authorization": meta.response.headers.get("authorization"),
+                    "token": meta.response.headers.get("x-auth-token")
+                }
+            }),
             invalidatesTags: ['Medicine']
         }),
 
@@ -60,36 +62,41 @@ export const medicine = coreApi.injectEndpoints({
 
             }),
 
-        transformResponse: (response, meta) => ({
-            data: JSON.parse(response),
-            headers: meta.response.headers
+            transformResponse: (response, meta) => ({
+                data: JSON.parse(response),
+                headers: {
+                    "content-type": meta.response.headers.get("content-type"),
+                    "content-length": meta.response.headers.get("content-length"),
+                    "authorization": meta.response.headers.get("authorization"),
+                    "token": meta.response.headers.get("x-auth-token")
+                }
+
+            }),
+            invalidatesTags: ['Medicine']
+
+        }),
+        deleteMedicine: build.mutation({
+            query: ({ user_id, medicine_id }) => ({
+                url: `medicine/${user_id}`,
+                method: "DELETE",
+                responseHandler: "text",
+                headers: {
+                    "Content-Type": "application/json",
+                    req_id: medicine_id
+                },
+            }),
+            invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
+        }),
 
     }),
-    invalidatesTags: ['Medicine']
-  
-    }),
-        deleteMedicine: build.mutation({
-        query: ({user_id,medicine}) => ({
-            url: `medicine/${user_id}`,
-            method: "DELETE",
-            responseHandler: "text",
-            headers: {
-        "Content-Type": "application/json",
-                medicine: medicine
-                },
-    }),
-    invalidatesTags: ["Medicine"], // Invalidate cache to refetch updated data
-       }),
- 
-}) ,
-overrideExisting: true,
+    overrideExisting: true,
 })
 
 export const { useGetAllMedicinesQuery
-                ,useGetUserOffersQuery
-                , useGetAcceptedMedicinesQuery
-                , useAddMedicineMutation 
-                ,useUpdateMedicineMutation   
-                , useDeleteMedicineMutation
-                
-                    } = medicine
+    , useGetUserOffersQuery
+    , useGetAcceptedMedicinesQuery
+    , useAddMedicineMutation
+    , useUpdateMedicineMutation
+    , useDeleteMedicineMutation
+
+} = medicine
