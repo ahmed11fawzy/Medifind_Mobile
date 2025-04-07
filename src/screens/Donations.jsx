@@ -66,13 +66,13 @@ export function Donations() {
         <View style={styles.statusBadge}>
           {item.status && item.examine && (
             <View style={styles.statusContainer}>
-              <Avatar.Icon size={24} icon="check-circle" color="#fff" style={[styles.statusIcon, { backgroundColor: '#4CAF50' }]} />
+              <Avatar.Icon size={24} icon="check" color="#fff" style={[styles.statusIcon, { backgroundColor: '#4CAF50' }]} />
               <Text style={[styles.statusText, { color: '#fff' }]}>ACCEPTED</Text>
             </View>
           )}
           {!item.status && item.examine && (
             <View style={styles.statusContainer}>
-              <Avatar.Icon size={24} icon="close-circle" color="#fff" style={[styles.statusIcon, { backgroundColor: '#F44336' }]} />
+              <Avatar.Icon size={24} icon="close" color="#fff" style={[styles.statusIcon, { backgroundColor: '#F44336' }]} />
               <Text style={[styles.statusText, { color: '#fff' }]}>REJECTED</Text>
             </View>
           )}
