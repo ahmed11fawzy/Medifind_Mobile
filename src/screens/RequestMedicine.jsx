@@ -159,7 +159,7 @@ export const RequestMedicine = () => {
       setMedicineName("");
       setDescription("");
       setImage(null);
-      navigation.navigate("Needs")
+      navigation.navigate("Orders")
     } catch (error) {
       console.error("Failed to request medicine:", error);
       Alert.alert("Error", "Failed to request medicine. Please try again.");

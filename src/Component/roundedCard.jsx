@@ -29,7 +29,7 @@ export const RoundedCard = ({ medicine }) => {
             }).unwrap(); 
     
             console.log("Request Added Successfully:", response);
-            navigation.navigate("Needs");
+            navigation.navigate("Orders");
         } catch (error) {
             console.error("Error Adding Request:", error);
         }

@@ -30,15 +30,51 @@ export function RequestsReview() {
   const [updateRequest] = useUpdateRequestMutation();
 
   const [combinedData, setCombinedData] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null); // State to hold the selected image
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [activeTab, setActiveTab] = useState('requests');
 
   // Update state when data is available
   useEffect(() => {
     if (data || data2) {
-      const newData = [...(data?.data || []), ...(data2?.data || [])].filter((item) => (!item.examined && item.req_name));
-      setCombinedData(newData);  
+      let newData;
+      if (activeTab === 'requests') {
+        newData = [...(data?.data || [])].filter((item) => (!item.examined && item.req_name));
+      } else {
+        newData = [...(data2?.data || [])].filter((item) => (!item.examined && item.req_name));
+      }
+      setCombinedData(newData);
     }
-  }, [data, data2]);
+  }, [data, data2, activeTab]);
+
+  // Filter tabs component
+  const FilterTabs = () => (
+    <View style={styles.filterContainer}>
+      <TouchableOpacity
+        style={[
+          styles.filterTab,
+          activeTab === 'requests' && styles.activeFilterTab
+        ]}
+        onPress={() => setActiveTab('requests')}
+      >
+        <Text style={[
+          styles.filterText,
+          activeTab === 'requests' && styles.activeFilterText
+        ]}>Requests</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.filterTab,
+          activeTab === 'orders' && styles.activeFilterTab
+        ]}
+        onPress={() => setActiveTab('orders')}
+      >
+        <Text style={[
+          styles.filterText,
+          activeTab === 'orders' && styles.activeFilterText
+        ]}>Orders</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   // Handle Accept Request
   const handleAccept = async (id, med_id) => {
@@ -135,17 +171,14 @@ export function RequestsReview() {
   );
 
   return (
-    <View style={[styles.container, selectedImage ? styles.dimBackground : null]}>
-      <Text style={styles.title}>Requests</Text>
-      
-
+    <View style={styles.mainContainer}>
+      <FilterTabs />
       <FlatList
         data={combinedData}
-        keyExtractor={(item) => item._id.toString()}
         renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={styles.listContainer}
       />
-
       {/* Modal for Image Preview */}
       <Modal visible={!!selectedImage} transparent animationType="fade">
         <View style={styles.modalContainer}>
@@ -163,6 +196,11 @@ export function RequestsReview() {
 
 // Styles
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 60,
+  },
   container: {
     flex: 1,
     width: '80%',
@@ -222,6 +260,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     padding: 15,
     marginBottom: 20,
+    
   },
   image: {
     width: '100%',
@@ -271,6 +310,36 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flex: 1,
     marginLeft: 5,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    gap: 15,
+  },
+  filterTab: {
+    paddingVertical: 8,
+    paddingHorizontal: 25,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  activeFilterTab: {
+    backgroundColor: Colors.mainColor,
+  },
+  filterText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  activeFilterText: {
+    color: '#fff',
+  },
+  listContainer: {
+    padding: 10,
+    width: '85%',
+    alignSelf: 'center',
   },
 });
 
