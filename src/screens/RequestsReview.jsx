@@ -137,14 +137,13 @@ export function RequestsReview() {
   return (
     <View style={[styles.container, selectedImage ? styles.dimBackground : null]}>
       <Text style={styles.title}>Requests</Text>
-      <View style={styles.iconContainer}>
-        <MedicineRequestIcon />
-      </View>
+      
 
       <FlatList
         data={combinedData}
         keyExtractor={(item) => item._id.toString()}
         renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
       />
 
       {/* Modal for Image Preview */}
@@ -152,7 +151,7 @@ export function RequestsReview() {
         <View style={styles.modalContainer}>
           {/* Close button */}
           <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedImage(null)}>
-            <IconButton icon="close" size={30} color="white" />
+            <IconButton icon="close" size={20} color="white" />
           </TouchableOpacity>
 
           <Image source={{ uri: selectedImage }} style={styles.fullscreenImage} />
@@ -165,12 +164,12 @@ export function RequestsReview() {
 // Styles
 const styles = StyleSheet.create({
   container: {
-    // alignItems: 'center',
+    flex: 1,
     width: '80%',
     marginHorizontal: '10%',
     paddingVertical: 20,
     backgroundColor: '#f5f5f5',
-    flex: 1,
+    marginBottom: 60,
   },
   dimBackground: {
     opacity: 0.3, // Reduce opacity when modal is open
@@ -232,13 +231,15 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    paddingVertical: 50,
-    paddingHorizontal: 20,
+    // paddingVertical: -50,
+    // paddingHorizontal: 20,
     marginVertical: 60,
-    backgroundColor: 'rgba(0, 0, 0, 0.859)', 
+    backgroundColor: 'rgba(143, 140, 140, 0.86)', 
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20, 
+    marginHorizontal: 20,
+    marginVertical: 120,
   },
   fullscreenImage: {
     width: '90%',
@@ -248,11 +249,11 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    backgroundColor: 'rgba(255, 97, 97, 0.5)',
+    backgroundColor: 'rgba(243, 27, 27, 0.54)',
     borderRadius: 50,
 
-    top: 40,
-    right: 20,
+    top: 20,
+    right: 15,
     zIndex: 10, 
   },
   actions: {

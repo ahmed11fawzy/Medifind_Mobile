@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Image } from "react-native";
-import { Text, Button, Surface } from "react-native-paper";
+import { Text, Button, Surface, Avatar } from "react-native-paper";
+import { Colors } from "../constants/RootColor";
 
 const MedicineCard = ({ medicine, onAdd, onDelete }) => {
   // Format the date to match the example (ISO format)
@@ -17,6 +18,15 @@ const MedicineCard = ({ medicine, onAdd, onDelete }) => {
   return (
     <Surface style={styles.card}>
       <View style={styles.contentContainer}>
+        <View style={styles.userInfo}>
+          {medicine.user_id?.profileImage ? (
+            <Avatar.Image size={40} source={{ uri: medicine.user_id.profileImage }} style={styles.avatar} />
+          ) : (
+            <Avatar.Icon size={40} icon="account" style={[styles.avatar, { backgroundColor: Colors.mainColor }]} />
+          )}
+          <Text style={styles.userName}>{medicine.user_id?.name || "Unknown User"}</Text>
+        </View>
+
         <Image
           source={{
             uri: medicine.image_path,
@@ -26,15 +36,15 @@ const MedicineCard = ({ medicine, onAdd, onDelete }) => {
 
         <View style={styles.details}>
           <View style={styles.row}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
-              {medicine.name}
+            <Text style={styles.label}>
+              Name: <Text style={styles.value}>{medicine.name}</Text>
             </Text>
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.label}>Expire date:</Text>
-            <Text style={styles.value}>{formatDate(medicine.expire_date)}</Text>
+            <Text style={styles.label}>
+              Expire date: <Text style={styles.value}>{formatDate(medicine.expire_date)}</Text>
+            </Text>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -66,55 +76,66 @@ const styles = StyleSheet.create({
   card: {
     marginVertical: 8,
     borderRadius: 8,
-    backgroundColor: "#dff5f0",
-    elevation: 2,
-    overflow: 'hidden', // This ensures the image respects the card's border radius
+    backgroundColor: '#fff',
+    elevation: 4,
+    overflow: 'hidden',
   },
   contentContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
   },
   image: {
-    width: 100,
-    height: '100%',
+    width: '100%',
+    height: 200,
     resizeMode: "cover",
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
   },
   details: {
-    flex: 1,
-    justifyContent: "space-between",
     padding: 16,
   },
   row: {
-    flexDirection: "row",
     marginBottom: 8,
-    alignItems: "center",
   },
   label: {
-    fontWeight: "bold",
-    marginRight: 8,
     fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#8989899',
   },
   value: {
-    fontSize: 16,
-    flex: 1,
+    fontSize: 15,
+    marginBottom: 5,
+    fontWeight: 'normal',
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
   },
   addButton: {
-    backgroundColor: "#00bcd4", // Teal color to match image
-    width: "48%",
+    backgroundColor: Colors.mainColor,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 5,
   },
   deleteButton: {
-    backgroundColor: "#e64e67", // Teal color to match image
-    width: "48%",
+    backgroundColor: '#e64e67',
+    borderRadius: 10,
+    flex: 1,
+    marginLeft: 5,
   },
   buttonLabel: {
-    fontSize: 14,
-    color: "white",
+    color: '#fff',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  avatar: {
+    marginRight: 16,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

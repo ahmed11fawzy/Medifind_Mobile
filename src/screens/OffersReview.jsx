@@ -123,6 +123,7 @@ export const OffersReview = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+       <Text style={styles.title}>Offers</Text>
       <FlatList
         data={medicineData}
         keyExtractor={(item) => item._id?.toString()}
@@ -138,6 +139,8 @@ export const OffersReview = () => {
         refreshing={refreshing}
         onRefresh={handleRefresh}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+
       />
 
       <Snackbar
@@ -158,8 +161,11 @@ export const OffersReview = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 0,
-    backgroundColor: "#f5f5f5",
+    width: '80%',
+    marginHorizontal: '10%',
+    paddingVertical: 20,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 60,
   },
   centerContainer: {
     flex: 1,
@@ -168,8 +174,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingBottom: 16,
   },
+    
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    marginHorizontal:100,
+    color: '#8989899',
+    fontFamily: 'serif',
+  },
 });
-
